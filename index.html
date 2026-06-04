@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mahesh Chandra Kotapati — Founder's Office & BI Leader</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+:root {
+  --navy: #0A192F;
+  --cyan: #00D4FF;
+  --green: #00FF94;
+  --purple: #7B61FF;
+  --white: #FFFFFF;
+  --muted: #AAB7C4;
+  --glass: rgba(255,255,255,0.05);
+  --glass-border: rgba(0,212,255,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:#0A192F;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden;}
+
+/* LOADER */
+#loader{position:fixed;inset:0;background:#0A192F;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.loader-text{font-size:13px;color:#00D4FF;letter-spacing:4px;text-transform:uppercase;margin-bottom:20px;opacity:0;}
+.loader-bar-wrap{width:300px;height:2px;background:rgba(0,212,255,0.15);border-radius:2px;}
+.loader-bar{height:100%;width:0%;background:linear-gradient(90deg,#00D4FF,#00FF94);border-radius:2px;transition:width 0.05s linear;}
+.loader-percent{font-size:48px;font-weight:700;background:linear-gradient(135deg,#00D4FF,#00FF94);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:20px;}
+
+/* CANVAS */
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(10,25,47,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,212,255,0.1);}
+.nav-logo{font-size:15px;font-weight:700;color:#00D4FF;letter-spacing:2px;}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:#AAB7C4;text-decoration:none;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;transition:color 0.3s;}
+.nav-links a:hover{color:#00D4FF;}
+.nav-cta{background:linear-gradient(135deg,#00D4FF,#7B61FF);color:#0A192F;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:1px;}
+
+/* SECTIONS */
+section{position:relative;z-index:1;}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 40px 80px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:20px;padding:6px 16px;font-size:11px;color:#00D4FF;letter-spacing:2px;text-transform:uppercase;margin-bottom:30px;}
+.hero-badge span{width:6px;height:6px;border-radius:50%;background:#00FF94;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero-title{font-size:clamp(36px,6vw,72px);font-weight:800;line-height:1.1;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,#00D4FF 50%,#00FF94 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:clamp(14px,2vw,18px);color:#AAB7C4;max-width:700px;line-height:1.7;margin-bottom:50px;}
+.kpi-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:50px;}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px 22px;min-width:130px;backdrop-filter:blur(10px);transition:all 0.3s;cursor:default;}
+.kpi-card:hover{border-color:#00D4FF;background:rgba(0,212,255,0.08);transform:translateY(-4px);}
+.kpi-num{font-size:24px;font-weight:800;color:#00D4FF;}
+.kpi-label{font-size:10px;color:#AAB7C4;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.btn-primary{background:linear-gradient(135deg,#00D4FF,#7B61FF);color:#0A192F;padding:14px 28px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:1px;transition:all 0.3s;border:none;cursor:pointer;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(0,212,255,0.4);}
+.btn-secondary{background:transparent;color:#00D4FF;padding:14px 28px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;letter-spacing:1px;border:1px solid rgba(0,212,255,0.4);transition:all 0.3s;cursor:pointer;}
+.btn-secondary:hover{background:rgba(0,212,255,0.08);transform:translateY(-2px);}
+.scroll-hint{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#AAB7C4;font-size:10px;letter-spacing:3px;z-index:10;pointer-events:none;}
+.scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,#00D4FF,transparent);animation:scrollAnim 2s infinite;}
+@keyframes scrollAnim{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+
+/* SECTION COMMON */
+.sec-wrap{max-width:1100px;margin:0 auto;padding:100px 40px;}
+.sec-label{font-size:11px;color:#00D4FF;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
+.sec-title{font-size:clamp(28px,4vw,48px);font-weight:800;margin-bottom:16px;line-height:1.2;}
+.sec-sub{font-size:15px;color:#AAB7C4;max-width:600px;line-height:1.7;margin-bottom:60px;}
+
+/* ABOUT TIMELINE */
+#about{background:linear-gradient(180deg,rgba(0,212,255,0.02) 0%,transparent 100%);}
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:grid;grid-template-columns:120px 40px 1fr;gap:0 20px;align-items:start;margin-bottom:0;}
+.tl-date{text-align:right;padding-top:20px;font-size:11px;color:#AAB7C4;letter-spacing:1px;}
+.tl-spine{display:flex;flex-direction:column;align-items:center;}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:#00D4FF;border:3px solid #0A192F;box-shadow:0 0 12px #00D4FF;flex-shrink:0;margin-top:22px;}
+.tl-line{width:2px;background:linear-gradient(to bottom,rgba(0,212,255,0.4),rgba(0,212,255,0.05));flex:1;min-height:40px;}
+.tl-card{background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.15);border-radius:14px;padding:24px 28px;margin-bottom:24px;backdrop-filter:blur(10px);transition:all 0.3s;}
+.tl-card:hover{border-color:rgba(0,212,255,0.5);background:rgba(0,212,255,0.06);transform:translateX(6px);}
+.tl-role{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;}
+.tl-company{font-size:13px;color:#00D4FF;margin-bottom:10px;}
+.tl-bullets{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.tl-bullets li{font-size:13px;color:#AAB7C4;padding-left:16px;position:relative;line-height:1.6;}
+.tl-bullets li::before{content:'▸';position:absolute;left:0;color:#00FF94;}
+.tl-tag{display:inline-block;background:rgba(0,255,148,0.1);border:1px solid rgba(0,255,148,0.3);color:#00FF94;font-size:10px;padding:3px 10px;border-radius:20px;margin-top:10px;letter-spacing:1px;}
+
+/* SKILLS */
+#skills{background:linear-gradient(180deg,transparent,rgba(123,97,255,0.03),transparent);}
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
+.skill-block{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;transition:all 0.3s;}
+.skill-block:hover{border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.06);transform:translateY(-6px);}
+.skill-block-icon{font-size:28px;margin-bottom:14px;}
+.skill-block-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:16px;letter-spacing:1px;}
+.skill-pills{display:flex;flex-wrap:wrap;gap:7px;}
+.pill{font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid;letter-spacing:0.5px;}
+.pill-cyan{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:#00D4FF;}
+.pill-green{background:rgba(0,255,148,0.1);border-color:rgba(0,255,148,0.3);color:#00FF94;}
+.pill-purple{background:rgba(123,97,255,0.1);border-color:rgba(123,97,255,0.3);color:#7B61FF;}
+.pill-white{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15);color:#AAB7C4;}
+
+/* PROJECTS */
+#projects{background:linear-gradient(180deg,rgba(0,255,148,0.02) 0%,transparent 100%);}
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+.proj-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;}
+.proj-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(123,97,255,0.05));opacity:0;transition:opacity 0.3s;}
+.proj-card:hover::before{opacity:1;}
+.proj-card:hover{border-color:rgba(0,212,255,0.4);transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.proj-num{font-size:11px;color:#00D4FF;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.proj-title{font-size:17px;font-weight:700;margin-bottom:10px;line-height:1.3;}
+.proj-desc{font-size:13px;color:#AAB7C4;line-height:1.7;margin-bottom:16px;}
+.proj-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.proj-impact{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:#00FF94;display:flex;align-items:center;gap:6px;}
+
+/* IMPACT */
+#impact{background:linear-gradient(180deg,transparent,rgba(0,212,255,0.03),transparent);}
+.impact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+.impact-card{background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.2);border-radius:16px;padding:30px 24px;text-align:center;transition:all 0.3s;}
+.impact-card:hover{border-color:#00D4FF;background:rgba(0,212,255,0.08);transform:translateY(-6px);}
+.impact-num{font-size:42px;font-weight:800;background:linear-gradient(135deg,#00D4FF,#00FF94);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.impact-unit{font-size:20px;}
+.impact-label{font-size:13px;color:#AAB7C4;margin-top:8px;line-height:1.5;}
+
+/* THOUGHT LEADERSHIP */
+#thoughts{background:linear-gradient(180deg,rgba(123,97,255,0.02) 0%,transparent 100%);}
+.thoughts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+.thought-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;transition:all 0.3s;cursor:pointer;}
+.thought-card:hover{border-color:rgba(123,97,255,0.4);background:rgba(123,97,255,0.06);transform:translateY(-4px);}
+.thought-tag{font-size:10px;color:#7B61FF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.thought-title{font-size:15px;font-weight:600;line-height:1.4;margin-bottom:8px;}
+.thought-desc{font-size:12px;color:#AAB7C4;line-height:1.6;}
+.thought-arrow{margin-top:14px;color:#00D4FF;font-size:13px;}
+
+/* CONTACT */
+#contact{background:linear-gradient(180deg,transparent,rgba(0,212,255,0.04));}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.contact-info{display:flex;flex-direction:column;gap:16px;}
+.contact-item{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px 22px;transition:all 0.3s;text-decoration:none;}
+.contact-item:hover{border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.06);}
+.contact-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,212,255,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.contact-text-label{font-size:10px;color:#AAB7C4;letter-spacing:1.5px;text-transform:uppercase;}
+.contact-text-val{font-size:14px;color:#fff;font-weight:500;margin-top:2px;}
+.contact-form-box{background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.2);border-radius:16px;padding:32px;}
+.form-title{font-size:18px;font-weight:700;margin-bottom:24px;}
+.form-group{margin-bottom:16px;}
+.form-group input,.form-group textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;color:#fff;font-size:13px;outline:none;transition:border-color 0.3s;font-family:inherit;}
+.form-group input:focus,.form-group textarea:focus{border-color:#00D4FF;}
+.form-group textarea{height:100px;resize:vertical;}
+::placeholder{color:#AAB7C4;}
+
+/* FLOATING MOUSE GLOW */
+#mouse-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.06) 0%,transparent 70%);pointer-events:none;z-index:2;transform:translate(-50%,-50%);transition:left 0.1s,top 0.1s;}
+
+/* DIVIDER */
+.gradient-line{height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.4),rgba(0,255,148,0.4),transparent);margin:0 40px;}
+
+/* FOOTER */
+footer{text-align:center;padding:30px 40px;color:#AAB7C4;font-size:12px;border-top:1px solid rgba(255,255,255,0.06);}
+
+/* SCROLL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(40px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1);}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1);}
+.reveal-left.visible{opacity:1;transform:translateX(0);}
+
+/* MOBILE */
+@media(max-width:768px){
+  .contact-grid{grid-template-columns:1fr;}
+  nav{padding:14px 20px;}
+  .nav-links{display:none;}
+  .sec-wrap{padding:70px 20px;}
+  .tl-item{grid-template-columns:80px 30px 1fr;}
+  .tl-date{font-size:10px;}
+}
+</style>
+</head>
+<body>
+
+<div id="mouse-glow"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-text" id="loader-text">Initializing Command Center</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
+  <div class="loader-percent" id="loader-percent">0%</div>
+</div>
+
+<!-- CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav id="main-nav" style="opacity:0">
+  <div class="nav-logo">MCK</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#projects">Projects</a>
+    <a href="#impact">Impact</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="mailto:maheshjobspace@gmail.com" class="nav-cta">Hire Mahesh</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-badge"><span></span> Available for Founder's Office & Strategy Roles</div>
+  <h1 class="hero-title" id="hero-title">Turning Data Into<br>Executive Decisions</h1>
+  <p class="hero-sub">Business Intelligence Leader driving strategy, analytics, operations, and founder-level execution across FinTech and high-growth organizations.</p>
+  <div class="kpi-row" id="kpi-row">
+    <div class="kpi-card"><div class="kpi-num" data-target="4">0</div><div class="kpi-label">Years Experience</div></div>
+    <div class="kpi-card"><div class="kpi-num" data-target="100">0</div><div class="kpi-label">Executive Reports</div></div>
+    <div class="kpi-card"><div class="kpi-num" data-target="80">0</div><div class="kpi-label">% Reporting Automation</div></div>
+    <div class="kpi-card"><div class="kpi-num" data-target="22">0</div><div class="kpi-label">% Efficiency Gain</div></div>
+    <div class="kpi-card"><div class="kpi-num" data-target="4">0</div><div class="kpi-label">Industries Served</div></div>
+  </div>
+  <div class="hero-btns">
+    <a href="#projects" class="btn-primary">Explore Portfolio</a>
+    <a href="#contact" class="btn-secondary">Connect →</a>
+    <a href="https://linkedin.com" target="_blank" class="btn-secondary">LinkedIn ↗</a>
+  </div>
+</section>
+
+<div class="scroll-hint" id="scroll-hint"><div class="scroll-line"></div></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-wrap">
+    <p class="sec-label reveal">Career Journey</p>
+    <h2 class="sec-title reveal">From Operations to<br>Executive Strategy</h2>
+    <p class="sec-sub reveal">A deliberate progression from operational analytics to strategic leadership — building data infrastructure, executive reporting systems, and founder-level decision support at every stage.</p>
+    <div class="timeline">
+
+      <div class="tl-item reveal">
+        <div class="tl-date">Jun – Dec 2021</div>
+        <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-role">Operations Analyst — MIS & Reporting</div>
+          <div class="tl-company">KCP Industries Ltd. · Vuyyuru, India</div>
+          <ul class="tl-bullets">
+            <li>Designed SQL-based KPI reporting infrastructure — 80% reduction in manual effort</li>
+            <li>Won "Best Data-Driven Strategy" award for KPI architecture aligned with business goals</li>
+          </ul>
+          <span class="tl-tag">🏆 Best Data-Driven Strategy Award</span>
+        </div>
+      </div>
+
+      <div class="tl-item reveal">
+        <div class="tl-date">Feb 2022 – Jan 2023</div>
+        <div class="tl-spine"><div class="tl-dot" style="background:#7B61FF;box-shadow:0 0 12px #7B61FF;"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-role">Senior Lead Analyst — Product Analytics & Experimentation</div>
+          <div class="tl-company">Shadowfax Technologies · Bengaluru, India</div>
+          <ul class="tl-bullets">
+            <li>Owned delivery partner lifecycle analytics — improved partner retention by 12%</li>
+            <li>Executed RCA frameworks on SLA breaches using SQL & Tableau</li>
+            <li>Partnered with Product leadership to define A/B test metrics</li>
+          </ul>
+          <span class="tl-tag" style="border-color:rgba(123,97,255,0.3);background:rgba(123,97,255,0.1);color:#7B61FF;">↑ 12% Partner Retention</span>
+        </div>
+      </div>
+
+      <div class="tl-item reveal">
+        <div class="tl-date">Mar 2023 – Sep 2025</div>
+        <div class="tl-spine"><div class="tl-dot" style="background:#00FF94;box-shadow:0 0 12px #00FF94;"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-role">Product Analyst — Supply Chain Analytics</div>
+          <div class="tl-company">Saint Louis University · St. Louis, MO</div>
+          <ul class="tl-bullets">
+            <li>Led A/B experiment design — drove 22% improvement in fulfilment efficiency</li>
+            <li>Built automated KPI reporting pipelines & executive dashboards</li>
+            <li>Delivered analytical storytelling achieving 15% reduction in process drop-offs</li>
+          </ul>
+          <span class="tl-tag" style="border-color:rgba(0,255,148,0.3);background:rgba(0,255,148,0.1);color:#00FF94;">M.S. Information Systems & Analytics</span>
+        </div>
+      </div>
+
+      <div class="tl-item reveal">
+        <div class="tl-date">Dec 2025 – Present</div>
+        <div class="tl-spine"><div class="tl-dot" style="background:linear-gradient(135deg,#00D4FF,#7B61FF);box-shadow:0 0 16px rgba(0,212,255,0.8);width:18px;height:18px;margin-top:20px;"></div></div>
+        <div class="tl-card" style="border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.06);">
+          <div class="tl-role">Business Analytics & Strategy Lead — Founder's Office</div>
+          <div class="tl-company">Recordent · Hyderabad, India ✦ Current</div>
+          <ul class="tl-bullets">
+            <li>Designed Power BI KPI ecosystems across sales, operations, finance & customer metrics</li>
+            <li>Built single source of truth connecting CRM, ERP & financial systems</li>
+            <li>Prepared quarterly investor stakeholder notes from Power BI dashboards</li>
+            <li>Supported CEO decision-making with analysis, scenario modelling & strategic recommendations</li>
+            <li>Tracked statutory compliance, budget performance & cash flow forecasts</li>
+          </ul>
+          <span class="tl-tag">⚡ Founder's Office · FinTech · Strategic Analytics</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="sec-wrap">
+    <p class="sec-label reveal">Capabilities</p>
+    <h2 class="sec-title reveal">Skills Command Center</h2>
+    <p class="sec-sub reveal">A comprehensive stack spanning BI tooling, advanced analytics, strategic operations, and fintech domain expertise.</p>
+    <div class="skills-grid">
+      <div class="skill-block reveal">
+        <div class="skill-block-icon">📊</div>
+        <div class="skill-block-title">Business Intelligence</div>
+        <div class="skill-pills">
+          <span class="pill pill-cyan">Power BI Desktop</span>
+          <span class="pill pill-cyan">Power Query</span>
+          <span class="pill pill-cyan">DAX</span>
+          <span class="pill pill-cyan">Data Modelling</span>
+          <span class="pill pill-cyan">ETL Pipelines</span>
+          <span class="pill pill-cyan">KPI Dashboards</span>
+          <span class="pill pill-cyan">Data Governance</span>
+        </div>
+      </div>
+      <div class="skill-block reveal">
+        <div class="skill-block-icon">🔬</div>
+        <div class="skill-block-title">Analytics & Data Science</div>
+        <div class="skill-pills">
+          <span class="pill pill-green">SQL</span>
+          <span class="pill pill-green">Tableau</span>
+          <span class="pill pill-green">A/B Testing</span>
+          <span class="pill pill-green">Funnel Analysis</span>
+          <span class="pill pill-green">Cohort Analysis</span>
+          <span class="pill pill-green">Retention Analysis</span>
+          <span class="pill pill-green">Root Cause Analysis</span>
+        </div>
+      </div>
+      <div class="skill-block reveal">
+        <div class="skill-block-icon">⚡</div>
+        <div class="skill-block-title">Strategy & Operations</div>
+        <div class="skill-pills">
+          <span class="pill pill-purple">KPI Frameworks</span>
+          <span class="pill pill-purple">OKRs</span>
+          <span class="pill pill-purple">PMO</span>
+          <span class="pill pill-purple">Executive Reporting</span>
+          <span class="pill pill-purple">Stakeholder Mgmt</span>
+          <span class="pill pill-purple">Process Optimization</span>
+        </div>
+      </div>
+      <div class="skill-block reveal">
+        <div class="skill-block-icon">🏦</div>
+        <div class="skill-block-title">Business Domains</div>
+        <div class="skill-pills">
+          <span class="pill pill-white">FinTech</span>
+          <span class="pill pill-white">MSME Ecosystem</span>
+          <span class="pill pill-white">Receivables Intelligence</span>
+          <span class="pill pill-white">Supply Chain</span>
+          <span class="pill pill-white">Unit Economics</span>
+          <span class="pill pill-white">Investor Relations</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="sec-wrap">
+    <p class="sec-label reveal">Featured Work</p>
+    <h2 class="sec-title reveal">Strategic Projects</h2>
+    <p class="sec-sub reveal">End-to-end analytics and strategy initiatives delivering measurable business impact across FinTech, supply chain, and executive operations.</p>
+    <div class="projects-grid">
+
+      <div class="proj-card reveal">
+        <div class="proj-num">Project 01</div>
+        <div class="proj-title">Founder's Office KPI Intelligence Platform</div>
+        <div class="proj-desc">Designed & implemented comprehensive Power BI dashboard ecosystem tracking KPIs across sales, operations, finance, and customer metrics — enabling real-time leadership visibility.</div>
+        <div class="proj-tags">
+          <span class="pill pill-cyan" style="font-size:10px">Power BI</span>
+          <span class="pill pill-purple" style="font-size:10px">KPI Governance</span>
+          <span class="pill pill-green" style="font-size:10px">Investor Reporting</span>
+        </div>
+        <div class="proj-impact">✦ Real-time visibility for CEO & investor decisions</div>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">Project 02</div>
+        <div class="proj-title">MSME Credit & Intelligence Dashboard</div>
+        <div class="proj-desc">Built analytics infrastructure for India's MSME ecosystem — tracking credit profiles, payment behavior, and collections performance across sectors and geographies.</div>
+        <div class="proj-tags">
+          <span class="pill pill-cyan" style="font-size:10px">DAX</span>
+          <span class="pill pill-white" style="font-size:10px">FinTech Analytics</span>
+          <span class="pill pill-green" style="font-size:10px">Credit Intelligence</span>
+        </div>
+        <div class="proj-impact">✦ Multi-sector MSME credit visibility</div>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">Project 03</div>
+        <div class="proj-title">Customer Outstanding & Collections Analytics</div>
+        <div class="proj-desc">Developed aging bucket analysis, collection prioritization dashboards, and branch-level outstanding tracking to optimize collections operations.</div>
+        <div class="proj-tags">
+          <span class="pill pill-cyan" style="font-size:10px">Power BI</span>
+          <span class="pill pill-white" style="font-size:10px">Collections</span>
+          <span class="pill pill-purple" style="font-size:10px">Operations</span>
+        </div>
+        <div class="proj-impact">✦ Improved collections prioritization & recovery</div>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">Project 04</div>
+        <div class="proj-title">Predictive Demand & Supply-Gap Modelling</div>
+        <div class="proj-desc">Built demand forecasting and capacity simulation models for peak traffic scenarios — improving resource utilization by 18% and reducing variable operational costs by 15%.</div>
+        <div class="proj-tags">
+          <span class="pill pill-green" style="font-size:10px">Forecasting</span>
+          <span class="pill pill-cyan" style="font-size:10px">SQL</span>
+          <span class="pill pill-white" style="font-size:10px">Supply Chain</span>
+        </div>
+        <div class="proj-impact">✦ 18% utilization gain · 15% cost reduction</div>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">Project 05</div>
+        <div class="proj-title">E-commerce Conversion Funnel Optimization</div>
+        <div class="proj-desc">End-to-end funnel and segmentation analysis using SQL to isolate a 15% drop-off at the verification stage. Proposed and validated UX interventions driving a 5% conversion uplift.</div>
+        <div class="proj-tags">
+          <span class="pill pill-green" style="font-size:10px">Funnel Analysis</span>
+          <span class="pill pill-cyan" style="font-size:10px">SQL</span>
+          <span class="pill pill-purple" style="font-size:10px">Product Analytics</span>
+        </div>
+        <div class="proj-impact">✦ 5% conversion rate uplift</div>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">Project 06</div>
+        <div class="proj-title">Delivery Partner Lifecycle Analytics</div>
+        <div class="proj-desc">Retention cohort analysis, churn signal identification, and behavioral pattern analysis across thousands of delivery partners. Produced data-driven policy interventions improving retention.</div>
+        <div class="proj-tags">
+          <span class="pill pill-green" style="font-size:10px">Cohort Analysis</span>
+          <span class="pill pill-cyan" style="font-size:10px">Retention</span>
+          <span class="pill pill-white" style="font-size:10px">Logistics</span>
+        </div>
+        <div class="proj-impact">✦ 12% partner retention improvement</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- IMPACT -->
+<section id="impact">
+  <div class="sec-wrap">
+    <p class="sec-label reveal">Quantified Results</p>
+    <h2 class="sec-title reveal">Executive Impact</h2>
+    <p class="sec-sub reveal">Measurable outcomes across every engagement — from operational efficiency to strategic decision enablement.</p>
+    <div class="impact-grid">
+      <div class="impact-card reveal"><div class="impact-num"><span class="count" data-target="22">0</span><span class="impact-unit">%</span></div><div class="impact-label">Fulfilment Efficiency Improvement</div></div>
+      <div class="impact-card reveal"><div class="impact-num"><span class="count" data-target="80">0</span><span class="impact-unit">%</span></div><div class="impact-label">Reporting Automation Gain</div></div>
+      <div class="impact-card reveal"><div class="impact-num"><span class="count" data-target="15">0</span><span class="impact-unit">%</span></div><div class="impact-label">Process Drop-off Reduction</div></div>
+      <div class="impact-card reveal"><div class="impact-num"><span class="count" data-target="12">0</span><span class="impact-unit">%</span></div><div class="impact-label">Partner Retention Improvement</div></div>
+      <div class="impact-card reveal"><div class="impact-num"><span class="count" data-target="18">0</span><span class="impact-unit">%</span></div><div class="impact-label">Resource Utilization Gain</div></div>
+      <div class="impact-card reveal"><div class="impact-num"><span class="count" data-target="4">0</span><span class="impact-unit">+</span></div><div class="impact-label">Years Building BI Ecosystems</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- THOUGHTS -->
+<section id="thoughts">
+  <div class="sec-wrap">
+    <p class="sec-label reveal">Thought Leadership</p>
+    <h2 class="sec-title reveal">Strategic Perspectives</h2>
+    <div class="thoughts-grid">
+      <div class="thought-card reveal">
+        <div class="thought-tag">Strategy</div>
+        <div class="thought-title">How Founder's Offices Drive Organizational Velocity</div>
+        <div class="thought-desc">Embedding analytics at the leadership layer — turning data latency into decision advantage for high-growth startups.</div>
+        <div class="thought-arrow">Read More →</div>
+      </div>
+      <div class="thought-card reveal">
+        <div class="thought-tag">FinTech</div>
+        <div class="thought-title">MSME Intelligence: Building Credit Visibility in India</div>
+        <div class="thought-desc">How alternative data and receivables intelligence are reshaping MSME credit access across India's informal economy.</div>
+        <div class="thought-arrow">Read More →</div>
+      </div>
+      <div class="thought-card reveal">
+        <div class="thought-tag">Analytics</div>
+        <div class="thought-title">Power BI for Executive Reporting: Beyond the Dashboard</div>
+        <div class="thought-desc">Designing KPI governance frameworks that create accountability, reduce metric ambiguity, and align cross-functional teams.</div>
+        <div class="thought-arrow">Read More →</div>
+      </div>
+      <div class="thought-card reveal">
+        <div class="thought-tag">Product</div>
+        <div class="thought-title">Product Analytics Frameworks for FinTech Platforms</div>
+        <div class="thought-desc">Cohort analysis, funnel design, and retention modelling tailored for financial product development cycles.</div>
+        <div class="thought-arrow">Read More →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="sec-wrap">
+    <p class="sec-label reveal">Get In Touch</p>
+    <h2 class="sec-title reveal">Open to High-Impact Roles</h2>
+    <p class="sec-sub reveal">Actively seeking Founder's Office, Chief of Staff, Strategy & Operations, and Product Analytics leadership opportunities in FinTech and high-growth environments.</p>
+    <div class="contact-grid">
+      <div class="contact-info reveal-left">
+        <a class="contact-item" href="mailto:maheshjobspace@gmail.com">
+          <div class="contact-icon">✉️</div>
+          <div><div class="contact-text-label">Email</div><div class="contact-text-val">maheshjobspace@gmail.com</div></div>
+        </a>
+        <a class="contact-item" href="tel:+917995218741">
+          <div class="contact-icon">📱</div>
+          <div><div class="contact-text-label">Phone</div><div class="contact-text-val">+91 7995218741</div></div>
+        </a>
+        <a class="contact-item" href="https://linkedin.com" target="_blank">
+          <div class="contact-icon">💼</div>
+          <div><div class="contact-text-label">LinkedIn</div><div class="contact-text-val">Connect with Mahesh</div></div>
+        </a>
+        <a class="contact-item" href="#">
+          <div class="contact-icon">📄</div>
+          <div><div class="contact-text-label">Resume</div><div class="contact-text-val">Download PDF</div></div>
+        </a>
+        <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:18px 22px;margin-top:8px;">
+          <div style="font-size:11px;color:#AAB7C4;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Location</div>
+          <div style="font-size:14px;color:#fff;">📍 Hyderabad, Telangana, India</div>
+          <div style="font-size:12px;color:#00FF94;margin-top:4px;">Open to remote & hybrid opportunities globally</div>
+        </div>
+      </div>
+      <div class="contact-form-box reveal">
+        <div class="form-title">Send a Message</div>
+        <div class="form-group"><input type="text" placeholder="Your Name"></div>
+        <div class="form-group"><input type="email" placeholder="Your Email"></div>
+        <div class="form-group"><input type="text" placeholder="Subject — e.g. Founder's Office Role"></div>
+        <div class="form-group"><textarea placeholder="Tell Mahesh about the opportunity..."></textarea></div>
+        <button class="btn-primary" style="width:100%;text-align:center;display:block;">Send Message →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p style="color:#AAB7C4;">© 2026 Mahesh Chandra Kotapati · Built for Founder's Office & Strategic Analytics Roles</p>
+  <p style="margin-top:6px;color:#00D4FF;font-size:11px;letter-spacing:2px;">HYDERABAD · INDIA · OPEN TO GLOBAL OPPORTUNITIES</p>
+</footer>
+
+<script>
+// SCROLL HINT — hide after scrolling past hero
+window.addEventListener('scroll', () => {
+  const hint = document.getElementById('scroll-hint');
+  if(hint) hint.style.opacity = window.scrollY > 80 ? '0' : '1';
+  hint.style.transition = 'opacity 0.4s';
+});
+
+// MOUSE GLOW
+const glow = document.getElementById('mouse-glow');
+document.addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+// THREE.JS PARTICLE BACKGROUND
+const canvas = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 80;
+
+// Particles
+const particleCount = 2000;
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+  positions[i * 3] = (Math.random() - 0.5) * 300;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 300;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 300;
+  const r = Math.random();
+  if (r < 0.33) { colors[i*3]=0;colors[i*3+1]=0.83;colors[i*3+2]=1; }
+  else if (r < 0.66) { colors[i*3]=0;colors[i*3+1]=1;colors[i*3+2]=0.58; }
+  else { colors[i*3]=0.48;colors[i*3+1]=0.38;colors[i*3+2]=1; }
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+pGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const pMat = new THREE.PointsMaterial({ size: 0.5, vertexColors: true, transparent: true, opacity: 0.7 });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+// Floating cubes
+const cubes = [];
+const cubeMat = new THREE.MeshBasicMaterial({ color: 0x00D4FF, wireframe: true, transparent: true, opacity: 0.15 });
+for (let i = 0; i < 8; i++) {
+  const size = Math.random() * 6 + 2;
+  const geo = new THREE.BoxGeometry(size, size, size);
+  const mesh = new THREE.Mesh(geo, cubeMat.clone());
+  mesh.position.set((Math.random()-0.5)*120, (Math.random()-0.5)*120, (Math.random()-0.5)*80);
+  mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+  scene.add(mesh);
+  cubes.push(mesh);
+}
+
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 0.3;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 0.3;
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.005;
+  particles.rotation.y = t * 0.05 + mouseX * 0.5;
+  particles.rotation.x = mouseY * 0.3;
+  cubes.forEach((c, i) => {
+    c.rotation.x += 0.003 + i * 0.0005;
+    c.rotation.y += 0.004 + i * 0.0003;
+    c.position.y += Math.sin(t + i) * 0.02;
+  });
+  renderer.render(scene, camera);
+}
+animate();
+
+// LOADER
+let pct = 0;
+const bar = document.getElementById('loader-bar');
+const pctEl = document.getElementById('loader-percent');
+const loaderText = document.getElementById('loader-text');
+const phrases = ['Loading Analytics Engine','Connecting Data Sources','Building Dashboards','Initializing Command Center'];
+let pi = 0;
+gsap.to({}, { duration: 0.01, onStart: () => { gsap.to(loaderText, {opacity:1,duration:0.5}); }, onComplete: ()=>{} });
+
+const loaderInterval = setInterval(() => {
+  pct += Math.random() * 4 + 1;
+  if (pct > 100) pct = 100;
+  bar.style.width = pct + '%';
+  pctEl.textContent = Math.floor(pct) + '%';
+  if (pct > 30 && pi === 0) { loaderText.textContent = phrases[1]; pi++; }
+  if (pct > 60 && pi === 1) { loaderText.textContent = phrases[2]; pi++; }
+  if (pct > 85 && pi === 2) { loaderText.textContent = phrases[3]; pi++; }
+  if (pct >= 100) {
+    clearInterval(loaderInterval);
+    setTimeout(() => {
+      gsap.to('#loader', { opacity: 0, duration: 0.8, onComplete: () => {
+        document.getElementById('loader').style.display = 'none';
+        gsap.to('#main-nav', { opacity: 1, duration: 0.6 });
+        // Hero entrance
+        gsap.from('.hero-badge', { opacity:0, y:20, duration:0.8, delay:0.2 });
+        gsap.from('#hero-title', { opacity:0, y:40, duration:1, delay:0.4 });
+        gsap.from('.hero-sub', { opacity:0, y:30, duration:0.8, delay:0.7 });
+        gsap.from('.kpi-card', { opacity:0, y:30, duration:0.6, stagger:0.1, delay:1 });
+        gsap.from('.hero-btns', { opacity:0, y:20, duration:0.6, delay:1.5 });
+        // Count up KPI
+        setTimeout(() => countUpElements(), 1200);
+      }});
+    }, 400);
+  }
+}, 50);
+
+// COUNT UP
+function countUpElements() {
+  document.querySelectorAll('[data-target]').forEach(el => {
+    const target = parseInt(el.getAttribute('data-target'));
+    let current = 0;
+    const step = target / 60;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current) + (el.getAttribute('data-target') == '4' ? '+' : (el.closest('.kpi-card') ? '+' : ''));
+    }, 30);
+  });
+}
+
+// SCROLL REVEALS
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Trigger count-up for impact section
+      e.target.querySelectorAll('.count').forEach(el => {
+        if (el.dataset.counted) return;
+        el.dataset.counted = true;
+        const target = parseInt(el.getAttribute('data-target'));
+        let current = 0;
+        const step = target / 50;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) { current = target; clearInterval(timer); }
+          el.textContent = Math.floor(current);
+        }, 30);
+      });
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal, .reveal-left').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
