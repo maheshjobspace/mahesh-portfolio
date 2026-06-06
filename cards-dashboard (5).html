@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Global Card Networks — Competitive Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030810;--bg2:#070E1A;--bg3:#0C1622;--bg4:#111C2A;
+  --border:#1E2D42;--border2:#243041;
+  --text:#F5F8FF;--muted:#8FA3BC;--hint:#3D5166;
+  --visa:#4B56D2;--mc:#FF6B6B;--amex:#4DAAFF;--rupay:#FF9A6C;
+  --gold:#F0C040;--green:#22D07A;--red:#FF4B4B;--purple:#A78BFA;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(26,37,53,0.3) 1px,transparent 1px),linear-gradient(90deg,rgba(26,37,53,0.3) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+
+/* HEADER */
+.header{display:grid;grid-template-columns:1fr auto;align-items:end;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.12em;margin-bottom:0.6rem;font-weight:500}
+.header h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,4.5vw,4rem);line-height:0.92;letter-spacing:-0.01em;font-weight:800}
+.header h1 span{color:var(--gold)}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.network-pills{display:flex;gap:6px}
+.pill{padding:3px 10px;border-radius:2px;font-size:10px;font-weight:500;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em}
+.pill-visa{background:rgba(75,86,210,0.2);color:var(--visa)}
+.pill-mc{background:rgba(255,107,107,0.15);color:var(--mc)}
+.pill-amex{background:rgba(77,170,255,0.15);color:var(--amex)}
+.pill-rupay{background:rgba(255,154,108,0.15);color:var(--rupay)}
+.header-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--hint)}
+
+/* EXECUTIVE SUMMARY */
+.exec-summary{background:linear-gradient(135deg,rgba(240,192,64,0.06) 0%,var(--bg2) 50%);border:1px solid rgba(240,192,64,0.2);border-radius:4px;padding:1.5rem;margin-bottom:1.5rem}
+.exec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px}
+.exec-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;color:var(--gold)}
+.exec-actions{display:flex;gap:8px}
+.btn{padding:7px 14px;border-radius:3px;font-size:11px;font-weight:500;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s;border:none;letter-spacing:0.05em}
+.btn-gold{background:rgba(240,192,64,0.12);color:var(--gold);border:1px solid rgba(240,192,64,0.3)}
+.btn-gold:hover{background:rgba(240,192,64,0.2)}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--muted);color:var(--text)}
+.btn-accent{background:var(--visa);color:#fff}
+.btn-accent:hover{background:#5B66E2;transform:translateY(-1px)}
+.btn-red{background:rgba(255,75,75,0.1);color:var(--red);border:1px solid rgba(255,75,75,0.25)}
+.insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.insight-item{display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border-radius:3px;padding:10px 12px}
+.insight-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0}
+.insight-text{font-size:13px;color:var(--muted);line-height:1.55;font-weight:400}
+.insight-text strong{color:var(--text);font-weight:600}
+
+/* AI PANEL */
+.ai-panel{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1.25rem;margin-top:1rem;display:none}
+.ai-panel.show{display:block}
+.ai-loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace}
+.ai-dots span{animation:blink 1.2s infinite;opacity:0}
+.ai-dots span:nth-child(2){animation-delay:.2s}
+.ai-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:0}50%{opacity:1}}
+.ai-results{display:none}
+.ai-results.show{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.ai-card{background:var(--bg3);border-radius:3px;padding:1rem}
+.ai-card-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;margin-bottom:8px}
+.ai-card-label.opp{color:var(--green)}
+.ai-card-label.risk{color:var(--red)}
+.ai-card-label.trend{color:var(--amex)}
+.ai-card-label.rec{color:var(--gold)}
+.ai-card-text{font-size:13px;color:var(--muted);line-height:1.5;font-weight:300}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:2rem;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:4px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 18px;border-radius:2px;font-size:12px;font-weight:500;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;cursor:pointer;transition:all .2s;color:var(--muted);border:none;background:transparent;white-space:nowrap}
+.tab.active{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* FILTERS BAR */
+.filters-bar{display:flex;gap:10px;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 14px;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--hint);letter-spacing:0.08em}
+.filter-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;outline:none}
+.filter-select:focus{border-color:var(--visa)}
+.filter-divider{width:1px;height:20px;background:var(--border);margin:0 4px}
+.active-filter{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--visa);background:rgba(75,86,210,0.1);padding:3px 8px;border-radius:2px;border:1px solid rgba(75,86,210,0.2)}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.25rem;position:relative;overflow:hidden;transition:all .2s;cursor:default}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.visa::before{background:var(--visa)}
+.kpi.mc::before{background:var(--mc)}
+.kpi.amex::before{background:var(--amex)}
+.kpi.rupay::before{background:var(--rupay)}
+.kpi:hover{border-color:var(--border2);transform:translateY(-1px)}
+.kpi-network{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;font-weight:500}
+.kpi-val{font-family:'Syne',sans-serif;font-size:2.8rem;line-height:1;margin-bottom:6px;font-weight:800}
+.kpi.visa .kpi-val{color:var(--visa)}
+.kpi.mc .kpi-val{color:var(--mc)}
+.kpi.amex .kpi-val{color:var(--amex)}
+.kpi.rupay .kpi-val{color:var(--rupay)}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0.01em}
+.kpi-badge{position:absolute;top:10px;right:10px;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px}
+.badge-up{background:rgba(34,208,122,0.1);color:var(--green)}
+.badge-down{background:rgba(255,75,75,0.1);color:var(--red)}
+
+/* BENCHMARK SCORES */
+.benchmark-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.bench-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1.25rem;text-align:center;position:relative;overflow:hidden}
+.bench-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.bench-card.visa::after{background:var(--visa)}
+.bench-card.mc::after{background:var(--mc)}
+.bench-card.amex::after{background:var(--amex)}
+.bench-card.rupay::after{background:var(--rupay)}
+.bench-network{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.08em}
+.bench-score{font-family:'Syne',sans-serif;font-size:4rem;line-height:1;margin-bottom:6px;font-weight:800}
+.bench-card.visa .bench-score{color:var(--visa)}
+.bench-card.mc .bench-score{color:var(--mc)}
+.bench-card.amex .bench-score{color:var(--amex)}
+.bench-card.rupay .bench-score{color:var(--rupay)}
+.bench-label{font-size:10px;color:var(--hint)}
+.bench-dims{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.bench-dim{display:flex;justify-content:space-between;align-items:center;font-size:10px}
+.bench-dim-name{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px}
+.bench-dim-val{color:var(--text);font-weight:500;font-size:12px}
+
+/* GRID LAYOUTS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-6040{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px}
+.grid-4060{display:grid;grid-template-columns:2fr 3fr;gap:14px;margin-bottom:14px}
+.mb{margin-bottom:14px}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1.25rem}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;color:var(--muted);margin-bottom:1.1rem;display:flex;align-items:center;gap:8px;font-weight:500}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.chart-wrap{position:relative;width:100%}
+.h180{height:180px}.h220{height:220px}.h260{height:260px}.h300{height:300px}.h320{height:320px}
+
+/* HBAR */
+.hbar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.hbar-label{font-size:12px;color:var(--text);min-width:95px;font-weight:500}
+.hbar-track{flex:1;height:6px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:1px;transition:width 1s ease}
+.hbar-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);min-width:48px;text-align:right;font-weight:500}
+
+/* SWOT */
+.swot-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.swot-btn{padding:5px 12px;border-radius:2px;font-size:10px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;letter-spacing:0.05em}
+.swot-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.swot-content{display:none}
+.swot-content.active{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.swot-quadrant{background:var(--bg3);border-radius:3px;padding:1rem}
+.swot-q-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;margin-bottom:8px}
+.swot-q-title.s{color:var(--green)}
+.swot-q-title.w{color:var(--red)}
+.swot-q-title.o{color:var(--amex)}
+.swot-q-title.t{color:var(--gold)}
+.swot-item{font-size:13px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:6px;font-weight:300}
+.swot-item:last-child{border:none;padding-bottom:0}
+.swot-item::before{content:'→';color:var(--hint);flex-shrink:0;margin-top:1px}
+
+/* SCENARIO */
+.scenario-grid{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.scenario-controls{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1.25rem}
+.scenario-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);margin-bottom:1rem}
+.slider-row{margin-bottom:1rem}
+.slider-label{font-size:11px;color:var(--text);margin-bottom:6px;display:flex;justify-content:space-between}
+.slider-val{font-family:'JetBrains Mono',monospace;color:var(--gold)}
+input[type=range]{width:100%;accent-color:var(--visa);cursor:pointer;height:3px}
+.scenario-results{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1.25rem}
+.scenario-output{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
+.sc-out{background:var(--bg3);border-radius:3px;padding:1rem;text-align:center}
+.sc-out-val{font-family:'Syne',sans-serif;font-size:2.2rem;color:var(--green);font-weight:800}
+.sc-out-label{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:4px;font-weight:500}
+
+/* FORECAST */
+.forecast-toggle{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.forecast-btn{padding:5px 12px;border-radius:2px;font-size:10px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
+.forecast-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+
+/* GEO MAP */
+.geo-legend{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.geo-leg-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.geo-leg-dot{width:10px;height:10px;border-radius:2px}
+.map-container{position:relative;background:var(--bg3);border-radius:4px;overflow:hidden;padding:1rem}
+.map-svg{width:100%;height:300px}
+.region-btn{cursor:pointer;transition:opacity .2s}
+.region-btn:hover{opacity:0.7}
+.map-tooltip{position:absolute;background:var(--bg4);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;font-size:11px;pointer-events:none;display:none;z-index:10;min-width:160px}
+.map-tooltip.show{display:block}
+.tt-region{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:6px;letter-spacing:0.06em}
+.tt-row{display:flex;justify-content:space-between;gap:12px;font-size:11px;margin-bottom:2px}
+.tt-network{color:var(--muted)}
+.tt-score{font-family:'JetBrains Mono',monospace;color:var(--text)}
+
+/* DATA TABLE */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;font-weight:400}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--hint);font-size:13px;font-weight:300}
+.data-table tr:last-child td{border:none}
+.data-table tr:hover td{background:rgba(255,255,255,0.015)}
+
+/* SOURCES */
+.sources-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.source-item{background:var(--bg3);border-radius:3px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px}
+.source-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--visa);min-width:18px}
+.source-text{font-size:13px;color:var(--muted);font-weight:300;line-height:1.5}
+.source-text strong{color:var(--text);font-weight:500;display:block;margin-bottom:2px}
+
+/* SCORECARD TABLE */
+.scorecard{width:100%;border-collapse:collapse}
+.scorecard th{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--border);font-weight:400}
+.scorecard td{padding:11px 14px;border-bottom:1px solid var(--hint);font-size:13px}
+.scorecard tr:last-child td{border:none}
+.scorecard tr:hover td{background:rgba(255,255,255,0.015)}
+.sc-network{font-weight:500;display:flex;align-items:center;gap:8px}
+.sc-dot{width:8px;height:8px;border-radius:2px}
+.sc-mini{height:3px;border-radius:1px;margin-top:4px}
+
+/* FOOTER */
+.footer{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-left{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--hint)}
+.footer-right{display:flex;gap:8px}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.page.active>*{animation:fadeUp .35s ease both}
+.page.active>*:nth-child(2){animation-delay:.05s}
+.page.active>*:nth-child(3){animation-delay:.1s}
+.page.active>*:nth-child(4){animation-delay:.15s}
+
+@media(max-width:900px){
+  .kpi-row,.benchmark-row,.grid-2,.grid-3,.grid-6040,.grid-4060,.scenario-grid{grid-template-columns:1fr 1fr}
+  .header{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .kpi-row,.benchmark-row{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3,.grid-6040,.grid-4060,.scenario-grid{grid-template-columns:1fr}
+  .swot-content.active{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="eyebrow">// COMPETITIVE INTELLIGENCE DASHBOARD · MAHESH KOTAPATI · 2024</div>
+    <h1>GLOBAL CARD <span>NETWORKS</span></h1>
+  </div>
+  <div class="header-right">
+    <div class="header-date">DATA PERIOD · 2019–2024</div>
+    <div class="network-pills">
+      <span class="pill pill-visa">VISA</span>
+      <span class="pill pill-mc">MASTERCARD</span>
+      <span class="pill pill-amex">AMEX</span>
+      <span class="pill pill-rupay">RUPAY</span>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-outline" onclick="exportPDF()">↓ Export Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="exec-summary">
+  <div class="exec-header">
+    <div class="exec-title">// KEY INSIGHTS — EXECUTIVE SUMMARY</div>
+
+  </div>
+  <div class="insights-grid">
+    <div class="insight-item"><span class="insight-dot"></span><span class="insight-text"><strong>Visa leads globally</strong> with 38.7% market share and 4BN active cards across 200+ countries</span></div>
+    <div class="insight-item"><span class="insight-dot"></span><span class="insight-text"><strong>Mastercard has highest coverage</strong> with acceptance in 210 countries and strongest network score 9.6 in Africa</span></div>
+    <div class="insight-item"><span class="insight-dot"></span><span class="insight-text"><strong>RuPay dominates India</strong> at 29.8% share with 750M cards but global penetration remains under 5%</span></div>
+    <div class="insight-item"><span class="insight-dot"></span><span class="insight-text"><strong>Amex owns premium segment</strong> with $215 avg ticket size, 20 lounge visits/yr, highest fraud resolution speed</span></div>
+    <div class="insight-item"><span class="insight-dot"></span><span class="insight-text"><strong>RuPay lowest cost network</strong> — MDR 1%, zero annual fee, 2% forex markup vs Amex 3%/4%/5%</span></div>
+    <div class="insight-item"><span class="insight-dot"></span><span class="insight-text"><strong>Fraud innovation</strong> — RuPay records lowest fraud rate (0.038 per 1000 txn), Amex resolves in 3 days</span></div>
+  </div>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('overview')">Overview</button>
+  <button class="tab" onclick="switchTab('benchmark')">KPI Benchmark</button>
+  <button class="tab" onclick="switchTab('performance')">Performance</button>
+  <button class="tab" onclick="switchTab('acceptance')">Geo Acceptance</button>
+  <button class="tab" onclick="switchTab('india')">India · RuPay</button>
+  <button class="tab" onclick="switchTab('security')">Security & Fees</button>
+  <button class="tab" onclick="switchTab('swot')">Intel Layer</button>
+
+  <button class="tab" onclick="switchTab('forecast')">Forecast</button>
+  <button class="tab" onclick="switchTab('scorecard')">Scorecard</button>
+</div>
+
+<!-- ══ PAGE: OVERVIEW ══ -->
+<div id="page-overview" class="page active">
+  <div class="kpi-row">
+    <div class="kpi visa"><div class="kpi-badge badge-up">+38.7%</div><div class="kpi-network">VISA · GLOBAL LEADER</div><div class="kpi-val">4BN</div><div class="kpi-label">Active Cards · 200 Countries</div></div>
+    <div class="kpi mc"><div class="kpi-badge badge-up">+32.4%</div><div class="kpi-network">MASTERCARD · WIDEST REACH</div><div class="kpi-val">3BN</div><div class="kpi-label">Active Cards · 210 Countries</div></div>
+    <div class="kpi amex"><div class="kpi-badge badge-up">+8.1%</div><div class="kpi-network">AMEX · PREMIUM SEGMENT</div><div class="kpi-val">142M</div><div class="kpi-label">Active Cards · 175 Countries</div></div>
+    <div class="kpi rupay"><div class="kpi-badge badge-up">+17.3%</div><div class="kpi-network">RUPAY · FASTEST GROWTH</div><div class="kpi-val">750M</div><div class="kpi-label">Active Cards · India Dominant</div></div>
+  </div>
+  <div class="grid-6040">
+    <div class="card"><div class="card-title">TRANSACTION VOLUME GROWTH · USD TRILLION · 2019–2024</div><div class="chart-wrap h260"><canvas id="txnChart"></canvas></div></div>
+    <div class="card"><div class="card-title">GLOBAL MARKET SHARE %</div><div class="chart-wrap h260"><canvas id="shareChart"></canvas></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">FEE STRUCTURE RADAR</div><div class="chart-wrap h220"><canvas id="feeRadar"></canvas></div></div>
+    <div class="card">
+      <div class="card-title">COUNTRIES ACCEPTED</div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">210</span></div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:95%;background:var(--visa)"></div></div><span class="hbar-val" style="color:var(--visa)">200</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:88%;background:var(--rupay)"></div></div><span class="hbar-val" style="color:var(--rupay)">185</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:83%;background:var(--amex)"></div></div><span class="hbar-val" style="color:var(--amex)">175</span></div>
+      <div style="margin-top:1.25rem"><div class="card-title">ACTIVE CARDS (BN/M)</div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:80%;background:var(--visa)"></div></div><span class="hbar-val" style="color:var(--visa)">4BN</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:60%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">3BN</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:15%;background:var(--rupay)"></div></div><span class="hbar-val" style="color:var(--rupay)">750M</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:3%;background:var(--amex)"></div></div><span class="hbar-val" style="color:var(--amex)">142M</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: KPI BENCHMARK ══ -->
+<div id="page-benchmark" class="page">
+  <div class="benchmark-row">
+    <div class="bench-card visa"><div class="bench-network">VISA</div><div class="bench-score">92</div><div class="bench-label">BENCHMARK SCORE / 100</div><div class="bench-dims"><div class="bench-dim"><span class="bench-dim-name">Market Share</span><span class="bench-dim-val">24/25</span></div><div class="bench-dim"><span class="bench-dim-name">Security</span><span class="bench-dim-val">22/25</span></div><div class="bench-dim"><span class="bench-dim-name">Acceptance</span><span class="bench-dim-val">24/25</span></div><div class="bench-dim"><span class="bench-dim-name">Cost Efficiency</span><span class="bench-dim-val">22/25</span></div></div></div>
+    <div class="bench-card mc"><div class="bench-network">MASTERCARD</div><div class="bench-score">89</div><div class="bench-label">BENCHMARK SCORE / 100</div><div class="bench-dims"><div class="bench-dim"><span class="bench-dim-name">Market Share</span><span class="bench-dim-val">22/25</span></div><div class="bench-dim"><span class="bench-dim-name">Security</span><span class="bench-dim-val">21/25</span></div><div class="bench-dim"><span class="bench-dim-name">Acceptance</span><span class="bench-dim-val">25/25</span></div><div class="bench-dim"><span class="bench-dim-name">Cost Efficiency</span><span class="bench-dim-val">21/25</span></div></div></div>
+    <div class="bench-card amex"><div class="bench-network">AMEX</div><div class="bench-score">81</div><div class="bench-label">BENCHMARK SCORE / 100</div><div class="bench-dims"><div class="bench-dim"><span class="bench-dim-name">Market Share</span><span class="bench-dim-val">16/25</span></div><div class="bench-dim"><span class="bench-dim-name">Security</span><span class="bench-dim-val">24/25</span></div><div class="bench-dim"><span class="bench-dim-name">Acceptance</span><span class="bench-dim-val">19/25</span></div><div class="bench-dim"><span class="bench-dim-name">Cost Efficiency</span><span class="bench-dim-val">22/25</span></div></div></div>
+    <div class="bench-card rupay"><div class="bench-network">RUPAY</div><div class="bench-score">78</div><div class="bench-label">BENCHMARK SCORE / 100</div><div class="bench-dims"><div class="bench-dim"><span class="bench-dim-name">Market Share</span><span class="bench-dim-val">12/25</span></div><div class="bench-dim"><span class="bench-dim-name">Security</span><span class="bench-dim-val">22/25</span></div><div class="bench-dim"><span class="bench-dim-name">Acceptance</span><span class="bench-dim-val">19/25</span></div><div class="bench-dim"><span class="bench-dim-name">Cost Efficiency</span><span class="bench-dim-val">25/25</span></div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">BENCHMARK COMPARISON RADAR</div><div class="chart-wrap h280"><canvas id="benchRadar"></canvas></div></div>
+    <div class="card"><div class="card-title">WEIGHTED SCORE BREAKDOWN</div><div class="chart-wrap h280"><canvas id="benchBar"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ══ PAGE: PERFORMANCE ══ -->
+<div id="page-performance" class="page">
+  <div class="kpi-row">
+    <div class="kpi visa"><div class="kpi-network">VISA SUCCESS RATE</div><div class="kpi-val">98.2%</div><div class="kpi-label">Industry leading</div></div>
+    <div class="kpi mc"><div class="kpi-network">MASTERCARD SUCCESS RATE</div><div class="kpi-val">97.9%</div><div class="kpi-label">Second highest</div></div>
+    <div class="kpi amex"><div class="kpi-network">AMEX SUCCESS RATE</div><div class="kpi-val">96.5%</div><div class="kpi-label">Premium network</div></div>
+    <div class="kpi rupay"><div class="kpi-network">RUPAY SUCCESS RATE</div><div class="kpi-val">94.8%</div><div class="kpi-label">Growing network</div></div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-title">AVERAGE TICKET SIZE · USD</div><div class="chart-wrap h200"><canvas id="ticketChart"></canvas></div></div>
+    <div class="card"><div class="card-title">PROCESSING SPEED · MS ↓ LOWER BETTER</div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:57%;background:var(--green)"></div></div><span class="hbar-val" style="color:var(--green)">1200ms</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:64%;background:var(--gold)"></div></div><span class="hbar-val" style="color:var(--gold)">1350ms</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:86%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">1800ms</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--red)"></div></div><span class="hbar-val" style="color:var(--red)">2100ms</span></div>
+      <div style="margin-top:1.25rem"><div class="card-title">CARD APPROVAL RATE %</div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:78%;background:var(--rupay)"></div></div><span class="hbar-val" style="color:var(--rupay)">78%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:65%;background:var(--visa)"></div></div><span class="hbar-val" style="color:var(--visa)">65%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:62%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">62%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:35%;background:var(--amex)"></div></div><span class="hbar-val" style="color:var(--amex)">35%</span></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">FRAUD RESOLUTION DAYS ↓ LOWER BETTER</div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:30%;background:var(--green)"></div></div><span class="hbar-val" style="color:var(--green)">3 days</span></div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:50%;background:var(--gold)"></div></div><span class="hbar-val" style="color:var(--gold)">5 days</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:70%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">7 days</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--red)"></div></div><span class="hbar-val" style="color:var(--red)">10 days</span></div>
+    </div>
+  </div>
+  <div class="card mb"><div class="card-title">FRAUD RATE TREND % PER 1000 TXN · 2019–2024</div><div class="chart-wrap h220"><canvas id="fraudChart"></canvas></div></div>
+</div>
+
+<!-- ══ PAGE: GEO ACCEPTANCE ══ -->
+<div id="page-acceptance" class="page">
+  <div class="card mb">
+    <div class="card-title">GLOBAL ACCEPTANCE HEAT MAP · SELECT REGION FOR DETAILS</div>
+    <div class="map-container">
+      <div class="map-tooltip" id="mapTooltip"></div>
+      <svg class="map-svg" viewBox="0 0 900 400" id="worldMap">
+        <!-- North America -->
+        <g class="region-btn" data-region="na" onmouseenter="showMapTooltip(event,'na')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('na')">
+          <rect x="60" y="60" width="180" height="120" rx="4" fill="#1A2535" stroke="#2D3E52" stroke-width="1"/>
+          <text x="150" y="110" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">NORTH</text>
+          <text x="150" y="126" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">AMERICA</text>
+          <circle cx="150" cy="148" r="12" fill="#4B56D2" opacity="0.8"/>
+          <text x="150" y="152" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">9.8</text>
+        </g>
+        <!-- Europe -->
+        <g class="region-btn" data-region="europe" onmouseenter="showMapTooltip(event,'europe')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('europe')">
+          <rect x="310" y="40" width="160" height="110" rx="4" fill="#1A2535" stroke="#2D3E52" stroke-width="1"/>
+          <text x="390" y="88" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">EUROPE</text>
+          <circle cx="390" cy="108" r="12" fill="#FF6B6B" opacity="0.8"/>
+          <text x="390" y="112" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">8.5</text>
+        </g>
+        <!-- Middle East -->
+        <g class="region-btn" data-region="me" onmouseenter="showMapTooltip(event,'me')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('me')">
+          <rect x="490" y="80" width="140" height="110" rx="4" fill="#1A2535" stroke="#2D3E52" stroke-width="1"/>
+          <text x="560" y="128" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">MIDDLE</text>
+          <text x="560" y="144" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">EAST</text>
+          <circle cx="560" cy="164" r="12" fill="#4DAAFF" opacity="0.8"/>
+          <text x="560" y="168" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">9.8</text>
+        </g>
+        <!-- Africa -->
+        <g class="region-btn" data-region="africa" onmouseenter="showMapTooltip(event,'africa')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('africa')">
+          <rect x="300" y="175" width="160" height="130" rx="4" fill="#1A2535" stroke="#2D3E52" stroke-width="1"/>
+          <text x="380" y="238" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">AFRICA</text>
+          <circle cx="380" cy="260" r="12" fill="#22D07A" opacity="0.7"/>
+          <text x="380" y="264" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">9.6</text>
+        </g>
+        <!-- Asia Pacific -->
+        <g class="region-btn" data-region="asia" onmouseenter="showMapTooltip(event,'asia')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('asia')">
+          <rect x="650" y="60" width="200" height="150" rx="4" fill="#1A2535" stroke="#2D3E52" stroke-width="1"/>
+          <text x="750" y="123" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">ASIA</text>
+          <text x="750" y="139" text-anchor="middle" fill="#6B7E96" font-size="11" font-family="JetBrains Mono">PACIFIC</text>
+          <circle cx="750" cy="160" r="12" fill="#4B56D2" opacity="0.8"/>
+          <text x="750" y="164" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">9.5</text>
+        </g>
+        <!-- India -->
+        <g class="region-btn" data-region="india" onmouseenter="showMapTooltip(event,'india')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('india')">
+          <rect x="640" y="230" width="160" height="120" rx="4" fill="#111C2A" stroke="rgba(255,154,108,0.4)" stroke-width="1.5"/>
+          <text x="720" y="283" text-anchor="middle" fill="#FF9A6C" font-size="11" font-family="JetBrains Mono" font-weight="500">INDIA ★</text>
+          <circle cx="720" cy="308" r="12" fill="#FF9A6C" opacity="0.9"/>
+          <text x="720" y="312" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">9.8</text>
+        </g>
+        <!-- South America -->
+        <g class="region-btn" data-region="sa" onmouseenter="showMapTooltip(event,'sa')" onmouseleave="hideMapTooltip()" onclick="highlightRegion('sa')">
+          <rect x="100" y="220" width="140" height="120" rx="4" fill="#1A2535" stroke="#2D3E52" stroke-width="1"/>
+          <text x="170" y="270" text-anchor="middle" fill="#8FA3BC" font-size="11" font-family="Inter" font-weight="500">SOUTH</text>
+          <text x="170" y="285" text-anchor="middle" fill="#8FA3BC" font-size="11" font-family="Inter" font-weight="500">AMERICA</text>
+          <circle cx="170" cy="308" r="12" fill="#FF6B6B" opacity="0.8"/>
+          <text x="170" y="312" text-anchor="middle" fill="white" font-size="9" font-family="JetBrains Mono">8.5</text>
+        </g>
+        <!-- Legend -->
+        <text x="30" y="380" fill="#2D3E52" font-size="9" font-family="JetBrains Mono">● = BEST ACCEPTANCE NETWORK IN REGION</text>
+      </svg>
+      <div class="geo-legend">
+        <div class="geo-leg-item"><div class="geo-leg-dot" style="background:var(--visa)"></div>Visa leads</div>
+        <div class="geo-leg-item"><div class="geo-leg-dot" style="background:var(--mc)"></div>Mastercard leads</div>
+        <div class="geo-leg-item"><div class="geo-leg-dot" style="background:var(--amex)"></div>Amex strong</div>
+        <div class="geo-leg-item"><div class="geo-leg-dot" style="background:var(--rupay)"></div>RuPay dominant</div>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">ACCEPTANCE SCORE BY REGION — ALL NETWORKS</div><div class="chart-wrap h280"><canvas id="acceptanceChart"></canvas></div></div>
+</div>
+
+<!-- ══ PAGE: INDIA ══ -->
+<div id="page-india" class="page">
+  <div style="background:linear-gradient(135deg,rgba(255,107,53,0.08) 0%,var(--bg2) 60%);border:1px solid rgba(255,107,53,0.2);border-radius:4px;padding:1.5rem;margin-bottom:14px">
+    <div style="font-family:'Syne',sans-serif;font-size:2rem;color:var(--rupay);margin-bottom:4px">RUPAY VS THE WORLD — INDIA'S CARD REVOLUTION</div>
+    <div style="font-size:12px;color:var(--muted);font-weight:300">How a domestic network became a 750M card story. Government-backed digital infrastructure driving global ambitions.</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:1rem">
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:1.8rem;color:var(--rupay)">29.8%</div><div style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace">INDIA SHARE</div></div>
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:1.8rem;color:var(--rupay)">132M</div><div style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace">DAILY TXN</div></div>
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:1.8rem;color:var(--rupay)">48.2BN</div><div style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace">UPI TXNS</div></div>
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:1.8rem;color:var(--rupay)">750M</div><div style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace">CARDS ISSUED</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">INDIA MARKET SHARE TRENDS % · 2020–2024</div><div class="chart-wrap h220"><canvas id="indiaShareChart"></canvas></div></div>
+    <div class="card"><div class="card-title">RUPAY YoY GROWTH % · 2020–2024</div><div class="chart-wrap h220"><canvas id="rupayChart"></canvas></div></div>
+  </div>
+  <div class="grid-6040">
+    <div class="card"><div class="card-title">GOVERNMENT SCHEME CARDS · MILLIONS</div><div class="chart-wrap h200"><canvas id="govtChart"></canvas></div></div>
+    <div class="card"><div class="card-title">GLOBAL VS INDIA SHARE %</div>
+      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-bottom:10px;letter-spacing:.06em">GLOBAL</div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:78%;background:var(--visa)"></div></div><span class="hbar-val" style="color:var(--visa)">39%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:64%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">32%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:16%;background:var(--amex)"></div></div><span class="hbar-val" style="color:var(--amex)">8%</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:8%;background:var(--rupay)"></div></div><span class="hbar-val" style="color:var(--rupay)">4%</span></div>
+      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin:12px 0 10px;letter-spacing:.06em">INDIA</div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:70%;background:var(--visa)"></div></div><span class="hbar-val" style="color:var(--visa)">35%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:58%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">29%</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:60%;background:var(--rupay)"></div></div><span class="hbar-val" style="color:var(--rupay)">30%</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:6%;background:var(--amex)"></div></div><span class="hbar-val" style="color:var(--amex)">3%</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SECURITY & FEES ══ -->
+<div id="page-security" class="page">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">FRAUD RATE PER 1000 TXN ↓ LOWER BETTER</div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:40%;background:var(--green)"></div></div><span class="hbar-val" style="color:var(--green)">0.038</span></div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:61%;background:var(--gold)"></div></div><span class="hbar-val" style="color:var(--gold)">0.058</span></div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:65%;background:var(--gold)"></div></div><span class="hbar-val" style="color:var(--gold)">0.062</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:74%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">0.071</span></div>
+      <div style="margin-top:1.25rem"><div class="card-title">AI SECURITY SCORE</div>
+      <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track"><div class="hbar-fill" style="width:95%;background:var(--amex)"></div></div><span class="hbar-val" style="color:var(--amex)">95</span></div>
+      <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track"><div class="hbar-fill" style="width:92%;background:var(--visa)"></div></div><span class="hbar-val" style="color:var(--visa)">92</span></div>
+      <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track"><div class="hbar-fill" style="width:90%;background:var(--mc)"></div></div><span class="hbar-val" style="color:var(--mc)">90</span></div>
+      <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track"><div class="hbar-fill" style="width:85%;background:var(--rupay)"></div></div><span class="hbar-val" style="color:var(--rupay)">85</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">COMPLETE FEE COMPARISON</div>
+      <table class="data-table">
+        <thead><tr><th>FEE TYPE</th><th style="color:var(--visa)">VISA</th><th style="color:var(--mc)">MC</th><th style="color:var(--amex)">AMEX</th><th style="color:var(--rupay)">RUPAY</th></tr></thead>
+        <tbody>
+          <tr><td>Annual Fee (USD)</td><td style="color:var(--visa)">$0</td><td style="color:var(--mc)">$0</td><td style="color:var(--amex)">$95</td><td style="color:var(--rupay)">$0</td></tr>
+          <tr><td>Late Payment</td><td style="color:var(--visa)">$25</td><td style="color:var(--mc)">$25</td><td style="color:var(--amex)">$40</td><td style="color:var(--rupay)">$10</td></tr>
+          <tr><td>Cash Advance %</td><td style="color:var(--visa)">4%</td><td style="color:var(--mc)">4%</td><td style="color:var(--amex)">5%</td><td style="color:var(--rupay)">3%</td></tr>
+          <tr><td>Forex Markup %</td><td style="color:var(--visa)">4%</td><td style="color:var(--mc)">4%</td><td style="color:var(--amex)">4%</td><td style="color:var(--rupay)">2%</td></tr>
+          <tr><td>MDR %</td><td style="color:var(--visa)">2%</td><td style="color:var(--mc)">2%</td><td style="color:var(--amex)">3%</td><td style="color:var(--rupay)">1%</td></tr>
+          <tr><td>Interchange %</td><td style="color:var(--visa)">1%</td><td style="color:var(--mc)">1%</td><td style="color:var(--amex)">2%</td><td style="color:var(--rupay)">1%</td></tr>
+          <tr><td>Cross Border %</td><td style="color:var(--visa)">1%</td><td style="color:var(--mc)">1%</td><td style="color:var(--amex)">2%</td><td style="color:var(--rupay)">1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">CASHBACK — BASIC VS PREMIUM %</div><div class="chart-wrap h200"><canvas id="cashbackChart"></canvas></div></div>
+    <div class="card"><div class="card-title">PREMIUM BENEFITS — LOUNGE VISITS & CASHBACK</div>
+      <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0">
+        <div>
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-bottom:10px;letter-spacing:0.06em">LOUNGE VISITS PER YEAR</div>
+          <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:100%;background:var(--amex);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--amex);font-size:14px;font-weight:600">20</span></div>
+          <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:75%;background:var(--mc);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--mc);font-size:14px;font-weight:600">15</span></div>
+          <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:50%;background:var(--visa);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--visa);font-size:14px;font-weight:600">10</span></div>
+          <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:50%;background:var(--rupay);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--rupay);font-size:14px;font-weight:600">10</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-bottom:10px;letter-spacing:0.06em">PREMIUM CASHBACK %</div>
+          <div class="hbar-row"><span class="hbar-label">Amex</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:100%;background:var(--amex);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--amex);font-size:14px;font-weight:600">5%</span></div>
+          <div class="hbar-row"><span class="hbar-label">Mastercard</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:50%;background:var(--mc);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--mc);font-size:14px;font-weight:600">2.5%</span></div>
+          <div class="hbar-row"><span class="hbar-label">Visa</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:40%;background:var(--visa);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--visa);font-size:14px;font-weight:600">2%</span></div>
+          <div class="hbar-row"><span class="hbar-label">RuPay</span><div class="hbar-track" style="height:10px;border-radius:3px"><div class="hbar-fill" style="width:30%;background:var(--rupay);height:100%;border-radius:3px"></div></div><span class="hbar-val" style="color:var(--rupay);font-size:14px;font-weight:600">1.5%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: INTEL / SWOT ══ -->
+<div id="page-swot" class="page">
+  <div class="card">
+    <div class="card-title">COMPETITIVE INTELLIGENCE LAYER — SWOT ANALYSIS</div>
+    <div class="swot-tabs">
+      <button class="swot-btn active" onclick="switchSwot('visa')">Visa</button>
+      <button class="swot-btn" onclick="switchSwot('mc')">Mastercard</button>
+      <button class="swot-btn" onclick="switchSwot('amex')">Amex</button>
+      <button class="swot-btn" onclick="switchSwot('rupay')">RuPay</button>
+    </div>
+    <div id="swot-visa" class="swot-content active">
+      <div class="swot-quadrant"><div class="swot-q-title s">STRENGTHS</div>
+        <div class="swot-item">Largest global acceptance network — 200 countries</div>
+        <div class="swot-item">Highest transaction success rate at 98.2%</div>
+        <div class="swot-item">Fastest processing speed at 1200ms</div>
+        <div class="swot-item">Market leader with 38.7% global share</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title w">WEAKNESSES</div>
+        <div class="swot-item">Higher merchant fees (MDR 2%) vs RuPay 1%</div>
+        <div class="swot-item">No premium benefits (zero golf rounds, no dining discounts)</div>
+        <div class="swot-item">Slower fraud resolution — 5 days vs Amex 3 days</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title o">OPPORTUNITIES</div>
+        <div class="swot-item">Tap emerging markets where digital payments are growing rapidly</div>
+        <div class="swot-item">AI-powered fraud detection to close gap with RuPay's 0.038 rate</div>
+        <div class="swot-item">Partnership with RuPay for India market co-acceptance</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title t">THREATS</div>
+        <div class="swot-item">RuPay's rapid growth in India — now at 29.8% domestic share</div>
+        <div class="swot-item">Regulatory pressure on interchange fees in EU and India</div>
+        <div class="swot-item">CBDC and digital wallets reducing traditional card dependency</div>
+      </div>
+    </div>
+    <div id="swot-mc" class="swot-content">
+      <div class="swot-quadrant"><div class="swot-q-title s">STRENGTHS</div>
+        <div class="swot-item">Widest global coverage — 210 countries, highest acceptance</div>
+        <div class="swot-item">Strongest overall network score 9.6 in Africa region</div>
+        <div class="swot-item">Best customer satisfaction score at 8.0/10</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title w">WEAKNESSES</div>
+        <div class="swot-item">Highest fraud rate (0.071 per 1000 txn) among all networks</div>
+        <div class="swot-item">Slower processing at 1350ms vs Visa 1200ms</div>
+        <div class="swot-item">Lower digital score (8.8) vs emerging competitors</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title o">OPPORTUNITIES</div>
+        <div class="swot-item">Leverage unmatched 210-country reach for SME cross-border solutions</div>
+        <div class="swot-item">AI fraud reduction to match RuPay's industry-best rate</div>
+        <div class="swot-item">Crypto card integration with existing network infrastructure</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title t">THREATS</div>
+        <div class="swot-item">Visa's processing speed advantage in high-frequency markets</div>
+        <div class="swot-item">RuPay's lower MDR attracting merchants in key markets</div>
+        <div class="swot-item">Fintech wallets bypassing card rails entirely</div>
+      </div>
+    </div>
+    <div id="swot-amex" class="swot-content">
+      <div class="swot-quadrant"><div class="swot-q-title s">STRENGTHS</div>
+        <div class="swot-item">Premium positioning — highest avg ticket size $215 vs $85 Visa</div>
+        <div class="swot-item">Fastest fraud resolution — 3 days industry best</div>
+        <div class="swot-item">Best premium benefits — 20 lounge visits, 12 golf rounds/yr</div>
+        <div class="swot-item">Highest AI security score at 95</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title w">WEAKNESSES</div>
+        <div class="swot-item">$95 annual fee and highest late payment at $40 limits mass adoption</div>
+        <div class="swot-item">Lowest card approval rate at 35% — restrictive underwriting</div>
+        <div class="swot-item">Limited acceptance in emerging markets — 175 countries</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title o">OPPORTUNITIES</div>
+        <div class="swot-item">High-net-worth India segment — growing UHNIs seeking premium cards</div>
+        <div class="swot-item">B2B corporate card expansion — higher ticket sizes align with product</div>
+        <div class="swot-item">Digital-only premium card with no annual fee to expand base</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title t">THREATS</div>
+        <div class="swot-item">Premium fintech cards (Apple Card, metal cards) eroding aspirational appeal</div>
+        <div class="swot-item">Visa/MC adding lounge access to mid-tier products</div>
+        <div class="swot-item">Economic downturns reducing premium discretionary spending</div>
+      </div>
+    </div>
+    <div id="swot-rupay" class="swot-content">
+      <div class="swot-quadrant"><div class="swot-q-title s">STRENGTHS</div>
+        <div class="swot-item">Lowest fraud rate globally — 0.038 per 1000 transactions</div>
+        <div class="swot-item">Zero annual fee, lowest MDR (1%) — merchant-friendly</div>
+        <div class="swot-item">Dominant India presence — 750M cards, 29.8% domestic share</div>
+        <div class="swot-item">Government backing ensures distribution through Jan Dhan</div>
+        <div class="swot-item">Highest card approval rate at 78% — financial inclusion focus</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title w">WEAKNESSES</div>
+        <div class="swot-item">Global acceptance critically low — 2.0/10 in Africa, 5.0 in Europe</div>
+        <div class="swot-item">Slowest processing speed at 2100ms</div>
+        <div class="swot-item">Longest fraud resolution — 10 days vs 3 for Amex</div>
+        <div class="swot-item">No premium benefits (zero golf rounds, zero dining discount)</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title o">OPPORTUNITIES</div>
+        <div class="swot-item">UPI internationalization — 48.2BN txns provide scale for global push</div>
+        <div class="swot-item">BRICS and Gulf cross-border acceptance partnerships</div>
+        <div class="swot-item">Co-brand with Visa/MC for international transactions</div>
+        <div class="swot-item">Premium RuPay Select card segment remains underdeveloped</div>
+      </div>
+      <div class="swot-quadrant"><div class="swot-q-title t">THREATS</div>
+        <div class="swot-item">UPI itself reducing RuPay card relevance in domestic market</div>
+        <div class="swot-item">Visa/Mastercard reducing MDR to compete on cost</div>
+        <div class="swot-item">Limited use case for international travellers — major churn driver</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SCENARIO MODEL ══ -->
+<!-- ══ PAGE: FORECAST ══ -->
+<div id="page-forecast" class="page">
+  <div class="forecast-toggle">
+    <button class="forecast-btn active" onclick="switchForecast('share')">Market Share</button>
+    <button class="forecast-btn" onclick="switchForecast('txn')">Transaction Volume</button>
+    <button class="forecast-btn" onclick="switchForecast('rupay')">RuPay Growth</button>
+  </div>
+  <div id="fc-share" class="card mb"><div class="card-title">MARKET SHARE FORECAST · 2024–2027</div><div class="chart-wrap h300"><canvas id="fcShareChart"></canvas></div></div>
+  <div id="fc-txn" class="card mb" style="display:none"><div class="card-title">TRANSACTION VOLUME FORECAST · USD TRILLION</div><div class="chart-wrap h300"><canvas id="fcTxnChart"></canvas></div></div>
+  <div id="fc-rupay" class="card mb" style="display:none"><div class="card-title">RUPAY GLOBAL GROWTH FORECAST</div><div class="chart-wrap h300"><canvas id="fcRupayChart"></canvas></div></div>
+  <div class="card">
+    <div class="card-title">FORECAST ASSUMPTIONS & METHODOLOGY</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div style="background:var(--bg3);border-radius:3px;padding:1rem"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:6px">METHOD</div><div style="font-size:11px;color:var(--muted);font-weight:300">Linear regression on 2019–2024 CAGR with market saturation dampening factor applied at 35%+ share thresholds</div></div>
+      <div style="background:var(--bg3);border-radius:3px;padding:1rem"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:6px">KEY ASSUMPTIONS</div><div style="font-size:11px;color:var(--muted);font-weight:300">Stable regulatory environment; UPI internationalization adds 2–3% to RuPay's global share by 2026; no major market consolidation</div></div>
+      <div style="background:var(--bg3);border-radius:3px;padding:1rem"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:6px">CONFIDENCE</div><div style="font-size:11px;color:var(--muted);font-weight:300">High confidence for 2025 (±1%), medium for 2026 (±2.5%), low for 2027 (±4%). Geopolitical events not modelled.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SCORECARD ══ -->
+<div id="page-scorecard" class="page">
+  <div class="benchmark-row">
+    <div class="bench-card visa"><div class="bench-network">VISA</div><div class="bench-score">8.9</div><div class="bench-label">OVERALL SCORE / 10</div></div>
+    <div class="bench-card mc"><div class="bench-network">MASTERCARD</div><div class="bench-score">8.7</div><div class="bench-label">OVERALL SCORE / 10</div></div>
+    <div class="bench-card amex"><div class="bench-network">AMEX</div><div class="bench-score">7.8</div><div class="bench-label">OVERALL SCORE / 10</div></div>
+    <div class="bench-card rupay"><div class="bench-network">RUPAY</div><div class="bench-score">7.2</div><div class="bench-label">OVERALL SCORE / 10</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">NETWORK PERFORMANCE RADAR</div><div class="chart-wrap h280"><canvas id="scRadar"></canvas></div></div>
+    <div class="card">
+      <div class="card-title">DETAILED SCORECARD</div>
+      <table class="scorecard">
+        <thead><tr><th>NETWORK</th><th>OVERALL</th><th>CUST SAT</th><th>DIGITAL</th><th>VALUE</th></tr></thead>
+        <tbody id="scBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">DATA SOURCES & METHODOLOGY</div>
+    <div class="sources-grid">
+      <div class="source-item"><span class="source-num">01</span><div class="source-text"><strong>Visa Inc. Annual Reports</strong>2019–2024 investor relations filings, Q4 earnings calls</div></div>
+      <div class="source-item"><span class="source-num">02</span><div class="source-text"><strong>Mastercard Annual Reports</strong>Global transaction data, SpendingPulse analytics</div></div>
+      <div class="source-item"><span class="source-num">03</span><div class="source-text"><strong>NPCI Annual Reports</strong>RuPay card issuance, UPI transaction volumes, Jan Dhan data</div></div>
+      <div class="source-item"><span class="source-num">04</span><div class="source-text"><strong>RBI Annual Reports</strong>India payment system statistics, card market share data</div></div>
+      <div class="source-item"><span class="source-num">05</span><div class="source-text"><strong>American Express Reports</strong>Billed business, cardmember spending, premium segment data</div></div>
+      <div class="source-item"><span class="source-num">06</span><div class="source-text"><strong>Nilson Report 2024</strong>Global card payment rankings, fraud statistics, market share</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-left">// GLOBAL CARD NETWORKS · COMPETITIVE INTELLIGENCE · MAHESH KOTAPATI · 2024</div>
+  <div class="footer-right">
+    <button class="btn btn-outline" onclick="exportPDF()">↓ Export PDF Report</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ══════════════════
+// COLORS & DEFAULTS
+// ══════════════════
+const C={visa:'#4B56D2',mc:'#FF6B6B',amex:'#4DAAFF',rupay:'#FF9A6C',
+  visaA:'rgba(75,86,210,0.18)',mcA:'rgba(255,107,107,0.15)',amexA:'rgba(77,170,255,0.15)',rupayA:'rgba(255,154,108,0.18)'};
+const G='transparent',T='rgba(160,180,200,0.85)';
+const BASE={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+ctx.formattedValue;}}}},
+  scales:{
+    x:{grid:{display:false},border:{display:false},ticks:{color:T,font:{size:12,family:'Inter',weight:'500'},padding:6}},
+    y:{grid:{display:false},border:{display:false},ticks:{color:T,font:{size:11,family:'JetBrains Mono',weight:'500'},padding:6},beginAtZero:true}
+  }};
+const inited={};
+
+// ══════════════════
+// TAB SWITCHING
+// ══════════════════
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+  setTimeout(()=>initPage(id),50);
+}
+function initPage(id){
+  if(inited[id])return;
+  inited[id]=true;
+  if(id==='overview')initOverview();
+  if(id==='benchmark')initBenchmark();
+  if(id==='performance')initPerformance();
+  if(id==='acceptance')initAcceptance();
+  if(id==='india')initIndia();
+  if(id==='security')initSecurity();
+  if(id==='scenario')initScenario();
+  if(id==='forecast')initForecast();
+  if(id==='scorecard')initScorecard();
+}
+
+// ══════════════════
+// FILTERS
+// ══════════════════
+function applyFilters(){
+  const n=document.getElementById('filterNetwork').value;
+  const r=document.getElementById('filterRegion').value;
+  const y=document.getElementById('filterYear').value;
+  const parts=[];
+  if(n!=='all')parts.push(n.toUpperCase());
+  if(r!=='all')parts.push(r.toUpperCase());
+  if(y!=='all')parts.push(y);else parts.push('2019–2024');
+  document.getElementById('activeFilterLabel').textContent=parts.join(' · ');
+}
+
+// ══════════════════
+// MAP TOOLTIP
+// ══════════════════
+const regionData={
+  na:{name:'NORTH AMERICA',visa:9.8,mc:9.8,amex:8.8,rupay:3.0},
+  europe:{name:'EUROPE',visa:7.8,mc:8.5,amex:5.5,rupay:5.0},
+  me:{name:'MIDDLE EAST',visa:9.8,mc:9.8,amex:8.9,rupay:8.2},
+  africa:{name:'AFRICA',visa:9.3,mc:9.6,amex:8.2,rupay:7.8},
+  asia:{name:'ASIA PACIFIC',visa:9.2,mc:9.5,amex:8.5,rupay:7.5},
+  india:{name:'INDIA ★',visa:6.8,mc:2.5,amex:9.8,rupay:9.8},
+  sa:{name:'SOUTH AMERICA',visa:8.2,mc:8.5,amex:6.5,rupay:1.5}
+};
+function showMapTooltip(e,region){
+  const d=regionData[region];if(!d)return;
+  const tt=document.getElementById('mapTooltip');
+  tt.innerHTML=`<div class="tt-region">${d.name}</div>
+    <div class="tt-row"><span class="tt-network" style="color:${C.visa}">Visa</span><span class="tt-score">${d.visa}/10</span></div>
+    <div class="tt-row"><span class="tt-network" style="color:${C.mc}">Mastercard</span><span class="tt-score">${d.mc}/10</span></div>
+    <div class="tt-row"><span class="tt-network" style="color:${C.amex}">Amex</span><span class="tt-score">${d.amex}/10</span></div>
+    <div class="tt-row"><span class="tt-network" style="color:${C.rupay}">RuPay</span><span class="tt-score">${d.rupay}/10</span></div>`;
+  tt.style.left=(e.offsetX+12)+'px';
+  tt.style.top=(e.offsetY-20)+'px';
+  tt.classList.add('show');
+}
+function hideMapTooltip(){document.getElementById('mapTooltip').classList.remove('show');}
+function highlightRegion(r){console.log('Region:',r);}
+
+// ══════════════════
+// SWOT SWITCHING
+// ══════════════════
+function switchSwot(n){
+  document.querySelectorAll('.swot-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.swot-content').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('swot-'+n).classList.add('active');
+}
+
+// ══════════════════
+// FORECAST TABS
+// ══════════════════
+function switchForecast(id){
+  document.querySelectorAll('.forecast-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  ['share','txn','rupay'].forEach(f=>{
+    const el=document.getElementById('fc-'+f);
+    if(el)el.style.display=f===id?'':'none';
+  });
+}
+
+// ══════════════════
+// SCENARIO MODEL
+// ══════════════════
+let scenarioChart=null;
+function initScenario(){
+  const ctx=document.getElementById('scenarioChart').getContext('2d');
+  scenarioChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['Global Share %','Rev Impact $B','Txn Growth %'],
+      datasets:[
+        {label:'Baseline',data:[4.2,0,0],backgroundColor:C.rupayA,borderColor:C.rupay,borderWidth:1,borderRadius:2},
+        {label:'Projected',data:[4.2,0,0],backgroundColor:C.rupay,borderRadius:2}
+      ]
+    },
+    options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:10}}}}
+  });
+}
+function updateScenario(){
+  const acc=+document.getElementById('sAcc').value;
+  const mdr=+document.getElementById('sMDR').value;
+  const part=+document.getElementById('sPart').value;
+  const speed=+document.getElementById('sSpeed').value;
+  document.getElementById('sAccVal').textContent='+'+acc+'%';
+  document.getElementById('sMDRVal').textContent='-'+mdr+'%';
+  document.getElementById('sPartVal').textContent=part;
+  document.getElementById('sSpeedVal').textContent='-'+speed+'ms';
+  const shareGain=(acc*0.06+part*0.12).toFixed(1);
+  const newShare=(4.2+parseFloat(shareGain)).toFixed(1);
+  const rev=(acc*0.8+part*2.1+mdr*0.3).toFixed(1);
+  const txn=(acc*0.9+part*3.2+speed*0.02).toFixed(0);
+  document.getElementById('scMarketShare').textContent=newShare+'%';
+  document.getElementById('scRevImpact').textContent='+$'+rev+'B';
+  document.getElementById('scTxnGrowth').textContent='+'+txn+'%';
+  if(scenarioChart){
+    scenarioChart.data.datasets[1].data=[parseFloat(newShare),parseFloat(rev),parseFloat(txn)];
+    scenarioChart.update();
+  }
+}
+function resetScenario(){
+  ['sAcc','sMDR','sPart','sSpeed'].forEach(id=>{document.getElementById(id).value=0;});
+  document.getElementById('sAccVal').textContent='+0%';
+  document.getElementById('sMDRVal').textContent='-0%';
+  document.getElementById('sPartVal').textContent='0';
+  document.getElementById('sSpeedVal').textContent='-0ms';
+  document.getElementById('scMarketShare').textContent='4.2%';
+  document.getElementById('scRevImpact').textContent='+$0B';
+  document.getElementById('scTxnGrowth').textContent='+0%';
+  if(scenarioChart){scenarioChart.data.datasets[1].data=[4.2,0,0];scenarioChart.update();}
+}
+
+// ══════════════════
+// EXPORT PDF
+// ══════════════════
+function exportPDF(){
+  const date = new Date().toLocaleDateString('en-IN',{year:'numeric',month:'long',day:'numeric'});
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Global Card Networks — Executive Intelligence Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#fff;color:#0D1520;font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* WATERMARK — diagonal, every page */
+@page{margin:20mm 18mm 20mm 18mm}
+body::before{
+  content:'MAHESH KOTAPATI';
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-35deg);
+  font-family:'Syne',sans-serif;
+  font-size:72px;
+  font-weight:800;
+  color:rgba(75,86,210,0.055);
+  letter-spacing:0.06em;
+  white-space:nowrap;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* REPEATED WATERMARK TILE */
+.watermark-tile{
+  position:fixed;inset:0;
+  background-image:repeating-linear-gradient(
+    -35deg,
+    transparent 0px,
+    transparent 160px,
+    rgba(75,86,210,0.03) 160px,
+    rgba(75,86,210,0.03) 162px
+  );
+  pointer-events:none;
+  z-index:0;
+}
+
+/* COVER PAGE */
+.cover{
+  min-height:100vh;
+  background:linear-gradient(160deg,#030810 0%,#070E1A 50%,#0C1622 100%);
+  color:#F5F8FF;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:60px;
+  page-break-after:always;
+  position:relative;
+  overflow:hidden;
+}
+.cover::before{
+  content:'';
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(30,45,66,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(30,45,66,0.5) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+.cover::after{
+  content:'MAHESH KOTAPATI';
+  position:absolute;
+  bottom:80px;right:60px;
+  font-family:'Syne',sans-serif;
+  font-size:13px;
+  letter-spacing:0.25em;
+  color:rgba(245,248,255,0.25);
+  font-weight:700;
+  text-transform:uppercase;
+}
+.cover-inner{position:relative;z-index:1}
+.cover-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:#4B56D2;margin-bottom:20px;text-transform:uppercase}
+.cover-title{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;line-height:0.95;letter-spacing:-0.02em;margin-bottom:8px}
+.cover-title span{color:#4B56D2}
+.cover-sub{font-size:18px;color:rgba(245,248,255,0.5);font-weight:300;margin-bottom:48px}
+.cover-meta{display:flex;gap:40px}
+.cover-meta-item{}
+.cover-meta-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:rgba(245,248,255,0.35);margin-bottom:4px}
+.cover-meta-val{font-size:14px;font-weight:600;color:rgba(245,248,255,0.85)}
+.cover-networks{display:flex;gap:10px;margin-top:48px}
+.net-pill{padding:6px 16px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em}
+.np-visa{background:rgba(75,86,210,0.2);color:#8B96FF;border:1px solid rgba(75,86,210,0.3)}
+.np-mc{background:rgba(255,107,107,0.12);color:#FF9898;border:1px solid rgba(255,107,107,0.25)}
+.np-amex{background:rgba(77,170,255,0.12);color:#88CAFF;border:1px solid rgba(77,170,255,0.25)}
+.np-rupay{background:rgba(255,154,108,0.12);color:#FFBF96;border:1px solid rgba(255,154,108,0.25)}
+
+/* CONTENT PAGES */
+.page-content{padding:48px 0;page-break-after:always;position:relative}
+.page-content:last-child{page-break-after:avoid}
+
+/* PAGE HEADER */
+.page-header{border-bottom:2px solid #1E2D42;padding-bottom:14px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end}
+.page-section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:#4B56D2;text-transform:uppercase}
+.page-number{font-family:'JetBrains Mono',monospace;font-size:10px;color:#3D5166}
+
+/* SECTION TITLE */
+.sec-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#0D1520;margin-bottom:20px;letter-spacing:-0.01em}
+.sec-title span{color:#4B56D2}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.kpi-box{border-radius:6px;padding:16px;border-top:3px solid}
+.kpi-box.visa{background:#F0F2FF;border-color:#4B56D2}
+.kpi-box.mc{background:#FFF2F2;border-color:#FF6B6B}
+.kpi-box.amex{background:#F0F7FF;border-color:#4DAAFF}
+.kpi-box.rupay{background:#FFF5F0;border-color:#FF9A6C}
+.kpi-net{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#6B7E96;margin-bottom:6px;text-transform:uppercase}
+.kpi-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:4px}
+.kpi-box.visa .kpi-num{color:#4B56D2}
+.kpi-box.mc .kpi-num{color:#FF6B6B}
+.kpi-box.amex .kpi-num{color:#4DAAFF}
+.kpi-box.rupay .kpi-num{color:#FF9A6C}
+.kpi-desc{font-size:11px;color:#6B7E96}
+
+/* INSIGHT CARDS */
+.insights{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.insight-box{background:#F8F9FF;border-left:3px solid #4B56D2;padding:12px 14px;border-radius:0 4px 4px 0}
+.insight-box strong{color:#0D1520;display:block;font-size:13px;font-weight:600;margin-bottom:3px}
+.insight-box span{color:#4B5868;font-size:12px;font-weight:300;line-height:1.5}
+
+/* BENCHMARK */
+.bench-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.bench-box{text-align:center;padding:20px 12px;border-radius:6px;border:1.5px solid #E8EDF5}
+.bench-score-num{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;line-height:1}
+.bench-box.visa .bench-score-num{color:#4B56D2}
+.bench-box.mc .bench-score-num{color:#FF6B6B}
+.bench-box.amex .bench-score-num{color:#4DAAFF}
+.bench-box.rupay .bench-score-num{color:#FF9A6C}
+.bench-net{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#6B7E96;margin-bottom:8px;text-transform:uppercase}
+.bench-out{font-size:11px;color:#9BAAB8;margin-top:4px}
+.bench-dim-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #F0F2F5}
+.bench-dim-row:last-child{border:none}
+.bench-dim-k{color:#9BAAB8}
+.bench-dim-v{font-weight:600;color:#3D4F6A}
+
+/* INTEL BOXES */
+.intel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+.intel-box{padding:16px;border-radius:6px;border:1px solid}
+.intel-opp{background:#F0FFF7;border-color:#22C77A}
+.intel-risk{background:#FFF0F0;border-color:#FF4B4B}
+.intel-trend{background:#F0F7FF;border-color:#4DAAFF}
+.intel-rec{background:#FFFBF0;border-color:#F0C040}
+.intel-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;font-weight:600;margin-bottom:8px;text-transform:uppercase}
+.intel-opp .intel-label{color:#22C77A}
+.intel-risk .intel-label{color:#FF4B4B}
+.intel-trend .intel-label{color:#4DAAFF}
+.intel-rec .intel-label{color:#D4A000}
+.intel-text{font-size:12px;color:#4B5868;line-height:1.6;font-weight:300}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:12px}
+thead th{background:#F5F7FF;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:#6B7E96;padding:10px 12px;text-align:left;border-bottom:2px solid #E0E6F0;text-transform:uppercase}
+tbody td{padding:11px 12px;border-bottom:1px solid #F0F2F5;color:#2D3E52;font-weight:400}
+tbody tr:hover td{background:#FAFBFF}
+tbody tr:last-child td{border:none}
+.net-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px}
+
+/* FORECAST TABLE */
+.forecast-table{width:100%;border-collapse:collapse;margin:16px 0}
+.forecast-table th{background:#F5F7FF;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:#6B7E96;padding:8px 12px;border-bottom:2px solid #E0E6F0;text-transform:uppercase}
+.forecast-table td{padding:10px 12px;border-bottom:1px solid #F0F2F5;font-size:12px}
+
+/* SWOT */
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.swot-box{padding:14px;border-radius:6px}
+.swot-s{background:#F0FFF7;border:1px solid #22C77A}
+.swot-w{background:#FFF0F0;border:1px solid #FF4B4B}
+.swot-o{background:#F0F7FF;border:1px solid #4DAAFF}
+.swot-t{background:#FFFBF0;border:1px solid #F0C040}
+.swot-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.1em;margin-bottom:10px;text-transform:uppercase}
+.swot-s .swot-label{color:#22C77A}
+.swot-w .swot-label{color:#FF4B4B}
+.swot-o .swot-label{color:#4DAAFF}
+.swot-t .swot-label{color:#D4A000}
+.swot-item{font-size:12px;color:#4B5868;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.05);display:flex;gap:8px;font-weight:300}
+.swot-item::before{content:'→';color:#9BAAB8;flex-shrink:0}
+.swot-item:last-child{border:none}
+
+/* BAR VISUAL */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-label{font-size:12px;font-weight:500;min-width:90px;color:#2D3E52}
+.bar-track{flex:1;height:8px;background:#F0F2F5;border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;min-width:44px;text-align:right}
+
+/* SOURCES */
+.sources{margin-top:20px}
+.source-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #F0F2F5}
+.source-item:last-child{border:none}
+.src-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:#4B56D2;min-width:24px;font-weight:600}
+.src-title{font-size:13px;font-weight:600;color:#0D1520;display:block;margin-bottom:2px}
+.src-desc{font-size:12px;color:#6B7E96;font-weight:300}
+
+/* PAGE FOOTER */
+.page-footer{position:fixed;bottom:0;left:0;right:0;padding:10px 48px;border-top:1px solid #E8EDF5;display:flex;justify-content:space-between;align-items:center;background:#fff;font-size:10px}
+.pf-left{font-family:'JetBrains Mono',monospace;color:#9BAAB8;letter-spacing:0.08em}
+.pf-right{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#C8D0E0;letter-spacing:0.12em}
+
+/* DIVIDER */
+.divider{height:1px;background:linear-gradient(90deg,#4B56D2,transparent);margin:24px 0;opacity:0.3}
+
+@media print{
+  body::before{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:linear-gradient(160deg,#030810 0%,#070E1A 50%,#0C1622 100%) !important}
+  .page-content{page-break-after:always}
+  .page-footer{position:fixed}
+}
+</style>
+</head>
+<body>
+
+<div class="watermark-tile"></div>
+
+<!-- ═══ FIXED FOOTER ═══ -->
+<div class="page-footer">
+  <span class="pf-left">GLOBAL CARD NETWORKS · COMPETITIVE INTELLIGENCE · ${date}</span>
+  <span class="pf-right">MAHESH KOTAPATI</span>
+</div>
+
+<!-- ═══════════════════════
+     COVER PAGE
+════════════════════════ -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-eyebrow">// Competitive Intelligence Report · 2019–2024</div>
+    <div class="cover-title">GLOBAL CARD<br/><span>NETWORKS</span></div>
+    <div class="cover-sub">A comprehensive analysis of Visa, Mastercard, Amex & RuPay</div>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><div class="cover-meta-label">PREPARED BY</div><div class="cover-meta-val">Mahesh Kotapati</div></div>
+      <div class="cover-meta-item"><div class="cover-meta-label">DATA PERIOD</div><div class="cover-meta-val">2019 – 2024</div></div>
+      <div class="cover-meta-item"><div class="cover-meta-label">DATE</div><div class="cover-meta-val">${date}</div></div>
+      <div class="cover-meta-item"><div class="cover-meta-label">PAGES</div><div class="cover-meta-val">7 Sections</div></div>
+    </div>
+    <div class="cover-networks">
+      <span class="net-pill np-visa">VISA</span>
+      <span class="net-pill np-mc">MASTERCARD</span>
+      <span class="net-pill np-amex">AMEX</span>
+      <span class="net-pill np-rupay">RUPAY</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 1 — EXECUTIVE SUMMARY
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 01 · Executive Summary</span><span class="page-number">Page 1</span></div>
+  <div class="sec-title">Key <span>Insights</span></div>
+  <div class="insights">
+    <div class="insight-box"><strong>Visa — Global Market Leader</strong><span>38.7% global market share with 4 billion active cards across 200+ countries. Fastest processing at 1200ms with 98.2% success rate.</span></div>
+    <div class="insight-box"><strong>Mastercard — Widest Global Reach</strong><span>Accepted in 210 countries — highest of any network. Strongest acceptance score in Africa (9.6/10) and North America (9.8/10).</span></div>
+    <div class="insight-box"><strong>RuPay — India's Digital Revolution</strong><span>750M cards issued, 29.8% India share. 48.2BN UPI transactions proving digital rails but global acceptance critically limited at 5.0 in Europe.</span></div>
+    <div class="insight-box"><strong>Amex — Premium Segment Owner</strong><span>$215 average ticket size vs $85 for Visa. Fastest fraud resolution (3 days), highest AI security score (95), 20 lounge visits per year.</span></div>
+    <div class="insight-box"><strong>RuPay — Lowest Transaction Costs</strong><span>MDR 1% (half of Visa/MC at 2%), zero annual fee, 2% forex markup, lowest fraud rate at 0.038 per 1000 transactions.</span></div>
+    <div class="insight-box"><strong>Growth Forecast</strong><span>RuPay projected to reach 8.5% global share by 2027 on UPI internationalization momentum. Visa projected to decline slightly from 38.7% to 37.4%.</span></div>
+  </div>
+  <div class="sec-title" style="font-size:16px">Market Overview</div>
+  <div class="kpi-grid">
+    <div class="kpi-box visa"><div class="kpi-net">Visa</div><div class="kpi-num">4BN</div><div class="kpi-desc">Active Cards · 200 Countries · 38.7% Share</div></div>
+    <div class="kpi-box mc"><div class="kpi-net">Mastercard</div><div class="kpi-num">3BN</div><div class="kpi-desc">Active Cards · 210 Countries · 32.4% Share</div></div>
+    <div class="kpi-box amex"><div class="kpi-net">Amex</div><div class="kpi-num">142M</div><div class="kpi-desc">Active Cards · 175 Countries · 8.1% Share</div></div>
+    <div class="kpi-box rupay"><div class="kpi-net">RuPay</div><div class="kpi-num">750M</div><div class="kpi-desc">Active Cards · India Dominant · 4.2% Global</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 2 — KPI BENCHMARK
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 02 · KPI Benchmark Scores</span><span class="page-number">Page 2</span></div>
+  <div class="sec-title">Weighted <span>Performance</span> Benchmark</div>
+  <div class="bench-grid">
+    <div class="bench-box visa"><div class="bench-net">Visa</div><div class="bench-score-num">92</div><div class="bench-out">/ 100 Benchmark Score</div><div style="margin-top:12px"><div class="bench-dim-row"><span class="bench-dim-k">Market Share</span><span class="bench-dim-v">24/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Security</span><span class="bench-dim-v">22/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Acceptance</span><span class="bench-dim-v">24/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Cost Efficiency</span><span class="bench-dim-v">22/25</span></div></div></div>
+    <div class="bench-box mc"><div class="bench-net">Mastercard</div><div class="bench-score-num">89</div><div class="bench-out">/ 100 Benchmark Score</div><div style="margin-top:12px"><div class="bench-dim-row"><span class="bench-dim-k">Market Share</span><span class="bench-dim-v">22/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Security</span><span class="bench-dim-v">21/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Acceptance</span><span class="bench-dim-v">25/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Cost Efficiency</span><span class="bench-dim-v">21/25</span></div></div></div>
+    <div class="bench-box amex"><div class="bench-net">Amex</div><div class="bench-score-num">81</div><div class="bench-out">/ 100 Benchmark Score</div><div style="margin-top:12px"><div class="bench-dim-row"><span class="bench-dim-k">Market Share</span><span class="bench-dim-v">16/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Security</span><span class="bench-dim-v">24/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Acceptance</span><span class="bench-dim-v">19/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Cost Efficiency</span><span class="bench-dim-v">22/25</span></div></div></div>
+    <div class="bench-box rupay"><div class="bench-net">RuPay</div><div class="bench-score-num">78</div><div class="bench-out">/ 100 Benchmark Score</div><div style="margin-top:12px"><div class="bench-dim-row"><span class="bench-dim-k">Market Share</span><span class="bench-dim-v">12/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Security</span><span class="bench-dim-v">22/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Acceptance</span><span class="bench-dim-v">19/25</span></div><div class="bench-dim-row"><span class="bench-dim-k">Cost Efficiency</span><span class="bench-dim-v">25/25</span></div></div></div>
+  </div>
+  <div class="sec-title" style="font-size:16px;margin-top:8px">Transaction Success & Processing</div>
+  <div class="bar-row"><span class="bar-label">Visa</span><div class="bar-track"><div class="bar-fill" style="width:98.2%;background:#4B56D2"></div></div><span class="bar-val" style="color:#4B56D2">98.2%</span></div>
+  <div class="bar-row"><span class="bar-label">Mastercard</span><div class="bar-track"><div class="bar-fill" style="width:97.9%;background:#FF6B6B"></div></div><span class="bar-val" style="color:#FF6B6B">97.9%</span></div>
+  <div class="bar-row"><span class="bar-label">Amex</span><div class="bar-track"><div class="bar-fill" style="width:96.5%;background:#4DAAFF"></div></div><span class="bar-val" style="color:#4DAAFF">96.5%</span></div>
+  <div class="bar-row"><span class="bar-label">RuPay</span><div class="bar-track"><div class="bar-fill" style="width:94.8%;background:#FF9A6C"></div></div><span class="bar-val" style="color:#FF9A6C">94.8%</span></div>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 3 — MARKET DATA TABLE
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 03 · Market Data</span><span class="page-number">Page 3</span></div>
+  <div class="sec-title">Complete <span>Competitive</span> Data</div>
+  <table>
+    <thead><tr><th>Network</th><th>Active Cards</th><th>Global Share</th><th>Countries</th><th>Success Rate</th><th>Fraud Rate/1000</th><th>Avg Ticket</th><th>Processing</th></tr></thead>
+    <tbody>
+      <tr><td><span class="net-dot" style="background:#4B56D2"></span><strong>Visa</strong></td><td>4 Billion</td><td>38.7%</td><td>200</td><td>98.2%</td><td>0.062</td><td>$85</td><td>1200ms</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF6B6B"></span><strong>Mastercard</strong></td><td>3 Billion</td><td>32.4%</td><td>210</td><td>97.9%</td><td>0.071</td><td>$78</td><td>1350ms</td></tr>
+      <tr><td><span class="net-dot" style="background:#4DAAFF"></span><strong>Amex</strong></td><td>142 Million</td><td>8.1%</td><td>175</td><td>96.5%</td><td>0.058</td><td>$215</td><td>1800ms</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF9A6C"></span><strong>RuPay</strong></td><td>750 Million</td><td>4.2%</td><td>185</td><td>94.8%</td><td>0.038</td><td>$32</td><td>2100ms</td></tr>
+    </tbody>
+  </table>
+  <div class="divider"></div>
+  <div class="sec-title" style="font-size:16px">Fee Comparison</div>
+  <table>
+    <thead><tr><th>Fee Type</th><th>Visa</th><th>Mastercard</th><th>Amex</th><th>RuPay</th></tr></thead>
+    <tbody>
+      <tr><td>Annual Fee</td><td>$0</td><td>$0</td><td>$95</td><td><strong style="color:#22C77A">$0</strong></td></tr>
+      <tr><td>MDR %</td><td>2%</td><td>2%</td><td>3%</td><td><strong style="color:#22C77A">1%</strong></td></tr>
+      <tr><td>Forex Markup %</td><td>4%</td><td>4%</td><td>4%</td><td><strong style="color:#22C77A">2%</strong></td></tr>
+      <tr><td>Cash Advance %</td><td>4%</td><td>4%</td><td>5%</td><td><strong style="color:#22C77A">3%</strong></td></tr>
+      <tr><td>Late Payment</td><td>$25</td><td>$25</td><td>$40</td><td><strong style="color:#22C77A">$10</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 4 — STRATEGIC INTEL
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 04 · Strategic Intelligence</span><span class="page-number">Page 4</span></div>
+  <div class="sec-title">Strategic <span>Analysis</span></div>
+  <div class="intel-grid">
+    <div class="intel-box intel-opp"><div class="intel-label">Opportunity</div><div class="intel-text">RuPay can expand globally through cross-border UPI partnerships. 48.2BN UPI transactions provide proven digital rails for South Asia and Gulf market expansion targeting 185+ countries by 2027.</div></div>
+    <div class="intel-box intel-risk"><div class="intel-label">Risk</div><div class="intel-text">RuPay's global acceptance (2.0/10 in Africa, 5.0 in Europe) creates a two-tier user experience limiting premium card issuance and corporate segment penetration outside India.</div></div>
+    <div class="intel-box intel-trend"><div class="intel-label">Trend</div><div class="intel-text">Digital score convergence — RuPay (8.2) nearly matches Visa (8.5) and Mastercard (8.8), signaling digital-native networks will compete on acceptance rather than technology by 2026.</div></div>
+    <div class="intel-box intel-rec"><div class="intel-label">Recommendation</div><div class="intel-text">Mastercard should leverage its 210-country acceptance lead with AI-powered fraud tools to defend against Visa's processing speed advantage (1200ms vs 1350ms) in high-growth markets.</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-title" style="font-size:16px">Visa — SWOT Analysis</div>
+  <div class="swot-grid">
+    <div class="swot-box swot-s"><div class="swot-label">Strengths</div><div class="swot-item">Largest global acceptance — 200 countries</div><div class="swot-item">Highest success rate at 98.2%</div><div class="swot-item">Fastest processing speed at 1200ms</div></div>
+    <div class="swot-box swot-w"><div class="swot-label">Weaknesses</div><div class="swot-item">Higher MDR (2%) vs RuPay 1%</div><div class="swot-item">No premium benefits (zero golf rounds)</div><div class="swot-item">Slower fraud resolution — 5 days</div></div>
+    <div class="swot-box swot-o"><div class="swot-label">Opportunities</div><div class="swot-item">AI fraud detection to match RuPay rates</div><div class="swot-item">India market co-acceptance with RuPay</div></div>
+    <div class="swot-box swot-t"><div class="swot-label">Threats</div><div class="swot-item">RuPay's 17.3% YoY growth in 2022</div><div class="swot-item">EU/India regulatory pressure on fees</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 5 — RUPAY INDIA
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 05 · RuPay India Story</span><span class="page-number">Page 5</span></div>
+  <div class="sec-title">RuPay — <span>India's</span> Card Revolution</div>
+  <div class="kpi-grid">
+    <div class="kpi-box rupay"><div class="kpi-net">India Share</div><div class="kpi-num">29.8%</div><div class="kpi-desc">Domestic card market</div></div>
+    <div class="kpi-box rupay"><div class="kpi-net">Daily Transactions</div><div class="kpi-num">132M</div><div class="kpi-desc">Daily transaction volume</div></div>
+    <div class="kpi-box rupay"><div class="kpi-net">UPI Transactions</div><div class="kpi-num">48.2BN</div><div class="kpi-desc">Annual UPI volume</div></div>
+    <div class="kpi-box rupay"><div class="kpi-net">Cards Issued</div><div class="kpi-num">750M</div><div class="kpi-desc">Total cards in circulation</div></div>
+  </div>
+  <div class="sec-title" style="font-size:16px">YoY Growth</div>
+  <div class="bar-row"><span class="bar-label">2020</span><div class="bar-track"><div class="bar-fill" style="width:48%;background:#FF9A6C"></div></div><span class="bar-val" style="color:#FF9A6C">8.3%</span></div>
+  <div class="bar-row"><span class="bar-label">2021</span><div class="bar-track"><div class="bar-fill" style="width:50%;background:#FF9A6C"></div></div><span class="bar-val" style="color:#FF9A6C">8.7%</span></div>
+  <div class="bar-row"><span class="bar-label">2022</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#FF6B35"></div></div><span class="bar-val" style="color:#FF6B35">17.3% ↑</span></div>
+  <div class="bar-row"><span class="bar-label">2023</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#FF9A6C"></div></div><span class="bar-val" style="color:#FF9A6C">15.6%</span></div>
+  <div class="bar-row"><span class="bar-label">2024</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#FF9A6C"></div></div><span class="bar-val" style="color:#FF9A6C">13.1%</span></div>
+  <div class="divider"></div>
+  <div class="sec-title" style="font-size:16px">Global vs India Share Comparison</div>
+  <table>
+    <thead><tr><th>Network</th><th>Global Share %</th><th>India Share %</th><th>India vs Global Delta</th></tr></thead>
+    <tbody>
+      <tr><td><span class="net-dot" style="background:#4B56D2"></span>Visa</td><td>39%</td><td>35%</td><td style="color:#FF4B4B">−4%</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF6B6B"></span>Mastercard</td><td>32%</td><td>29%</td><td style="color:#FF4B4B">−3%</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF9A6C"></span>RuPay</td><td>4%</td><td>30%</td><td style="color:#22C77A">+26% ↑</td></tr>
+      <tr><td><span class="net-dot" style="background:#4DAAFF"></span>Amex</td><td>8%</td><td>3%</td><td style="color:#FF4B4B">−5%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 6 — FORECAST
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 06 · Market Forecast</span><span class="page-number">Page 6</span></div>
+  <div class="sec-title">2025–2027 <span>Forecast</span></div>
+  <table class="forecast-table">
+    <thead><tr><th>Network</th><th>2024 Share</th><th>2025F</th><th>2026F</th><th>2027F</th><th>Trend</th></tr></thead>
+    <tbody>
+      <tr><td><span class="net-dot" style="background:#4B56D2"></span>Visa</td><td>38.7%</td><td>38.2%</td><td>37.8%</td><td>37.4%</td><td style="color:#FF4B4B">↓ Slow decline</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF6B6B"></span>Mastercard</td><td>32.4%</td><td>32.0%</td><td>31.6%</td><td>31.2%</td><td style="color:#FF4B4B">↓ Marginal decline</td></tr>
+      <tr><td><span class="net-dot" style="background:#4DAAFF"></span>Amex</td><td>8.1%</td><td>7.9%</td><td>7.8%</td><td>7.6%</td><td style="color:#FF4B4B">↓ Premium squeeze</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF9A6C"></span>RuPay</td><td>4.2%</td><td>5.8%</td><td>7.2%</td><td>8.5%</td><td style="color:#22C77A">↑ Strong growth</td></tr>
+    </tbody>
+  </table>
+  <div class="divider"></div>
+  <div class="sec-title" style="font-size:16px">Transaction Volume Forecast — USD Trillion</div>
+  <table class="forecast-table">
+    <thead><tr><th>Network</th><th>2024</th><th>2025F</th><th>2026F</th><th>2027F</th><th>CAGR</th></tr></thead>
+    <tbody>
+      <tr><td><span class="net-dot" style="background:#4B56D2"></span>Visa</td><td>$14.8T</td><td>$16.2T</td><td>$17.8T</td><td>$19.5T</td><td style="color:#22C77A">+9.6%</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF6B6B"></span>Mastercard</td><td>$14.8T</td><td>$16.0T</td><td>$17.5T</td><td>$19.1T</td><td style="color:#22C77A">+8.9%</td></tr>
+      <tr><td><span class="net-dot" style="background:#FF9A6C"></span>RuPay</td><td>$0.6T</td><td>$1.2T</td><td>$2.1T</td><td>$3.4T</td><td style="color:#22C77A">+78% ↑</td></tr>
+      <tr><td><span class="net-dot" style="background:#4DAAFF"></span>Amex</td><td>$2.1T</td><td>$2.4T</td><td>$2.7T</td><td>$3.0T</td><td style="color:#22C77A">+12.6%</td></tr>
+    </tbody>
+  </table>
+  <div class="divider"></div>
+  <div style="background:#F8F9FF;border:1px solid #E0E6F0;border-radius:6px;padding:16px;font-size:12px;color:#4B5868;line-height:1.6">
+    <strong style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#4B56D2;display:block;margin-bottom:8px">METHODOLOGY NOTE</strong>
+    Forecasts based on linear regression applied to 2019–2024 CAGR with market saturation dampening at 35%+ share thresholds. RuPay growth assumption includes UPI internationalization contributing +2–3% global share by 2026. Confidence: 2025 ±1%, 2026 ±2.5%, 2027 ±4%.
+  </div>
+</div>
+
+<!-- ═══════════════════════
+     PAGE 7 — SOURCES
+════════════════════════ -->
+<div class="page-content">
+  <div class="page-header"><span class="page-section-label">Section 07 · Data Sources</span><span class="page-number">Page 7</span></div>
+  <div class="sec-title">Data <span>Sources</span> & Methodology</div>
+  <div class="sources">
+    <div class="source-item"><span class="src-num">01</span><div><span class="src-title">Visa Inc. Annual Reports 2019–2024</span><span class="src-desc">Investor relations filings, Q4 earnings calls, net revenue and payment volume data. Available at investor.visa.com</span></div></div>
+    <div class="source-item"><span class="src-num">02</span><div><span class="src-title">Mastercard Annual Reports 2019–2024</span><span class="src-desc">Global transaction data, SpendingPulse analytics, switched transactions and GDV. Available at investor.mastercard.com</span></div></div>
+    <div class="source-item"><span class="src-num">03</span><div><span class="src-title">NPCI Annual Reports 2019–2024</span><span class="src-desc">RuPay card issuance statistics, UPI transaction volumes, Jan Dhan scheme data. Available at npci.org.in</span></div></div>
+    <div class="source-item"><span class="src-num">04</span><div><span class="src-title">Reserve Bank of India — Payment System Reports</span><span class="src-desc">India card market share, digital payments statistics, POS terminal data. Available at rbi.org.in</span></div></div>
+    <div class="source-item"><span class="src-num">05</span><div><span class="src-title">American Express Annual Reports 2019–2024</span><span class="src-desc">Billed business, cardmember spending, average ticket size, premium benefits data. Available at ir.americanexpress.com</span></div></div>
+    <div class="source-item"><span class="src-num">06</span><div><span class="src-title">The Nilson Report 2024</span><span class="src-desc">Global card payment industry rankings, fraud statistics, merchant acceptance data. nilsonreport.com</span></div></div>
+  </div>
+  <div style="margin-top:32px;padding:20px;background:#030810;color:#F5F8FF;border-radius:6px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px">MAHESH KOTAPATI</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(245,248,255,0.4);letter-spacing:0.12em">GLOBAL CARD NETWORKS · COMPETITIVE INTELLIGENCE · ${date}</div>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:rgba(75,86,210,0.15);letter-spacing:-0.02em">2024</div>
+  </div>
+</div>
+
+</body>
+</html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Global-Card-Networks-Report-Mahesh-Kotapati.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // Also open for print
+  const w = window.open(url, '_blank');
+  if(w) {
+    setTimeout(()=>{
+      try { w.print(); } catch(e){}
+    }, 1500);
+  }
+}
+
+// ══════════════════════════════════
+// ALL CHART INITIALIZATIONS
+// ══════════════════════════════════
+function initOverview(){
+  new Chart(document.getElementById('txnChart'),{type:'bar',data:{labels:['2019','2020','2021','2022','2023','2024'],
+    datasets:[
+      {label:'Visa',data:[7.1,5.8,6.5,9.5,8.8,14.8],backgroundColor:C.visa,borderRadius:2},
+      {label:'Mastercard',data:[9.8,8.9,11.1,13.2,11.6,14.8],backgroundColor:C.mc,borderRadius:2},
+      {label:'Amex',data:[1.8,1.1,1.5,2.1,1.2,2.1],backgroundColor:C.amex,borderRadius:2},
+      {label:'RuPay',data:[0.1,0.2,0.4,0.6,0.3,0.6],backgroundColor:C.rupay,borderRadius:2}
+    ]},options:{...BASE,showDataLabels:true,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:10,padding:12}}}}});
+
+  new Chart(document.getElementById('shareChart'),{type:'doughnut',data:{
+    labels:['Visa 38.7%','Mastercard 32.4%','Amex 8.1%','RuPay 4.2%','Others 16.6%'],
+    datasets:[{data:[38.7,32.4,8.1,4.2,16.6],backgroundColor:[C.visa,C.mc,C.amex,C.rupay,'#1A2535'],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'right',labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:8}}}}});
+
+  new Chart(document.getElementById('feeRadar'),{type:'radar',data:{
+    labels:['Annual Fee','Late Pmt','Cash Adv','Forex','MDR','Interchange'],
+    datasets:[
+      {label:'Visa',data:[0,25,4,4,2,1],borderColor:C.visa,backgroundColor:C.visaA,borderWidth:1.5,pointRadius:2},
+      {label:'Mastercard',data:[0,25,4,4,2,1],borderColor:C.mc,backgroundColor:C.mcA,borderWidth:1.5,pointRadius:2},
+      {label:'Amex',data:[95,40,5,4,3,2],borderColor:C.amex,backgroundColor:C.amexA,borderWidth:1.5,pointRadius:2},
+      {label:'RuPay',data:[0,10,3,2,1,1],borderColor:C.rupay,backgroundColor:C.rupayA,borderWidth:1.5,pointRadius:2}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:T,font:{size:11,family:'Inter'},boxWidth:8,padding:8}}},
+      scales:{r:{grid:{color:'rgba(255,255,255,0.08)'},angleLines:{color:'rgba(255,255,255,0.06)'},pointLabels:{color:T,font:{size:11,family:'Inter'}},ticks:{display:false}}}}});
+}
+
+function initBenchmark(){
+  new Chart(document.getElementById('benchRadar'),{type:'radar',data:{
+    labels:['Market Share','Security','Acceptance','Growth','Cost Efficiency'],
+    datasets:[
+      {label:'Visa',data:[24,22,24,18,22],borderColor:C.visa,backgroundColor:C.visaA,borderWidth:1.5,pointRadius:3,pointBackgroundColor:C.visa},
+      {label:'Mastercard',data:[22,21,25,16,21],borderColor:C.mc,backgroundColor:C.mcA,borderWidth:1.5,pointRadius:3,pointBackgroundColor:C.mc},
+      {label:'Amex',data:[16,24,19,14,22],borderColor:C.amex,backgroundColor:C.amexA,borderWidth:1.5,pointRadius:3,pointBackgroundColor:C.amex},
+      {label:'RuPay',data:[12,22,19,22,25],borderColor:C.rupay,backgroundColor:C.rupayA,borderWidth:1.5,pointRadius:3,pointBackgroundColor:C.rupay}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:10}}},
+      scales:{r:{min:0,max:25,grid:{color:G},angleLines:{color:G},pointLabels:{color:T,font:{size:12,family:'Inter',weight:'500'}},ticks:{display:false}}}}});
+
+  new Chart(document.getElementById('benchBar'),{type:'bar',data:{
+    labels:['Visa','Mastercard','Amex','RuPay'],
+    datasets:[
+      {label:'Market Share',data:[24,22,16,12],backgroundColor:C.visa,borderRadius:2,stack:'s'},
+      {label:'Security',data:[22,21,24,22],backgroundColor:C.mc,borderRadius:2,stack:'s'},
+      {label:'Acceptance',data:[24,25,19,19],backgroundColor:C.amex,borderRadius:2,stack:'s'},
+      {label:'Cost Efficiency',data:[22,21,22,25],backgroundColor:C.rupay,borderRadius:2,stack:'s'}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:10}}},
+      scales:{...BASE.scales,x:{...BASE.scales.x,stacked:true},y:{...BASE.scales.y,stacked:true,max:100}}}});
+}
+
+function initPerformance(){
+  new Chart(document.getElementById('ticketChart'),{type:'bar',data:{
+    labels:['Amex','Visa','Mastercard','RuPay'],
+    datasets:[{data:[215,85,78,32],backgroundColor:[C.amex,C.visa,C.mc,C.rupay],borderRadius:3,borderSkipped:false}]},
+    options:{...BASE,showDataLabels:true,indexAxis:'y'}});
+
+  new Chart(document.getElementById('fraudChart'),{type:'line',data:{
+    labels:['2019','2020','2021','2022','2023','2024'],
+    datasets:[
+      {label:'Amex',data:[0.07,0.04,0.05,0.05,0.04,0.06],borderColor:C.amex,borderWidth:2,tension:0.4,pointRadius:3,fill:false},
+      {label:'Mastercard',data:[0.10,0.07,0.08,0.08,0.07,0.09],borderColor:C.mc,borderWidth:2,tension:0.4,pointRadius:3,fill:false},
+      {label:'RuPay',data:[0.06,0.07,0.08,0.07,0.09,null],borderColor:C.rupay,borderWidth:2,tension:0.4,pointRadius:3,fill:false},
+      {label:'Visa',data:[0.08,0.06,0.06,0.07,0.06,0.07],borderColor:C.visa,borderWidth:2,tension:0.4,pointRadius:3,fill:false}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8}}}}});
+}
+
+function initAcceptance(){
+  new Chart(document.getElementById('acceptanceChart'),{type:'bar',data:{
+    labels:['Africa','Asia Pacific','Europe','India','Middle East','North America'],
+    datasets:[
+      {label:'Mastercard',data:[9.6,9.5,8.5,2.5,9.8,9.8],backgroundColor:C.mc,borderRadius:2},
+      {label:'Visa',data:[9.3,9.2,7.8,6.8,9.8,9.8],backgroundColor:C.visa,borderRadius:2},
+      {label:'Amex',data:[8.2,8.5,5.5,9.8,8.9,8.8],backgroundColor:C.amex,borderRadius:2},
+      {label:'RuPay',data:[7.8,7.5,5.0,9.8,8.2,8.5],backgroundColor:C.rupay,borderRadius:2}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:10}}},
+      scales:{...BASE.scales,y:{...BASE.scales.y,max:10}}}});
+}
+
+function initIndia(){
+  new Chart(document.getElementById('indiaShareChart'),{type:'line',data:{
+    labels:['2020','2021','2022','2023','2024'],
+    datasets:[
+      {label:'Visa',data:[36,35,36,36,35],borderColor:C.visa,tension:0.4,borderWidth:2,pointRadius:3,fill:false},
+      {label:'Mastercard',data:[30,29,30,30,29],borderColor:C.mc,tension:0.4,borderWidth:2,pointRadius:3,fill:false},
+      {label:'RuPay',data:[22,26,25,28,30],borderColor:C.rupay,tension:0.4,borderWidth:2,pointRadius:3,fill:false},
+      {label:'Amex',data:[4,4,3,3,3],borderColor:C.amex,tension:0.4,borderWidth:2,pointRadius:3,fill:false}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8}}}}});
+
+  new Chart(document.getElementById('rupayChart'),{type:'bar',data:{
+    labels:['2020','2021','2022','2023','2024'],
+    datasets:[{data:[8.3,8.7,17.3,15.6,13.1],backgroundColor:[C.rupay,C.rupay,'rgba(255,107,53,0.9)',C.rupay,C.rupay],borderRadius:3,borderSkipped:false}]},
+    options:{...BASE}});
+
+  new Chart(document.getElementById('govtChart'),{type:'bar',data:{
+    labels:['2020','2021','2022','2023','2024'],
+    datasets:[
+      {label:'Govt Scheme',data:[85,110,138,165,162],backgroundColor:C.rupay,borderRadius:2},
+      {label:'Jan Dhan',data:[120,210,290,255,240],backgroundColor:'rgba(255,107,53,0.4)',borderRadius:2}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8}}}}});
+}
+
+function initSecurity(){
+  new Chart(document.getElementById('cashbackChart'),{type:'bar',data:{
+    labels:['Amex','Mastercard','RuPay','Visa'],
+    datasets:[
+      {label:'Basic %',data:[3.0,1.5,1.0,1.0],backgroundColor:[C.amex,C.mc,C.rupay,C.visa],borderRadius:2},
+      {label:'Premium %',data:[5.0,2.5,1.5,2.0],backgroundColor:['rgba(77,170,255,0.4)','rgba(255,107,107,0.4)','rgba(255,154,108,0.4)','rgba(75,86,210,0.4)'],borderRadius:2}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8}}}}});
+}
+
+function initForecast(){
+  const histYears=['2019','2020','2021','2022','2023','2024'];
+  const fcYears=['2025F','2026F','2027F'];
+  const allYears=[...histYears,...fcYears];
+
+  new Chart(document.getElementById('fcShareChart'),{type:'line',data:{
+    labels:allYears,
+    datasets:[
+      {label:'Visa',data:[40,39,39,39,38.7,38.7,38.2,37.8,37.4],borderColor:C.visa,backgroundColor:C.visaA,borderWidth:2,tension:0.4,pointRadius:3,fill:true,borderDash:[0,0]},
+      {label:'Mastercard',data:[32,33,33,32.5,32.4,32.4,32.0,31.6,31.2],borderColor:C.mc,borderWidth:2,tension:0.4,pointRadius:3,fill:false},
+      {label:'RuPay',data:[2,2.5,3,3.5,4,4.2,5.8,7.2,8.5],borderColor:C.rupay,backgroundColor:C.rupayA,borderWidth:2,tension:0.4,pointRadius:3,fill:true},
+      {label:'Amex',data:[9,8.5,8.2,8.3,8.1,8.1,7.9,7.8,7.6],borderColor:C.amex,borderWidth:2,tension:0.4,pointRadius:3,fill:false}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:10}}}}});
+
+  new Chart(document.getElementById('fcTxnChart'),{type:'line',data:{
+    labels:allYears,
+    datasets:[
+      {label:'Visa',data:[7.1,5.8,6.5,9.5,8.8,14.8,16.2,17.8,19.5],borderColor:C.visa,backgroundColor:C.visaA,borderWidth:2,tension:0.4,pointRadius:3,fill:true},
+      {label:'Mastercard',data:[9.8,8.9,11.1,13.2,11.6,14.8,16.0,17.5,19.1],borderColor:C.mc,borderWidth:2,tension:0.4,pointRadius:3,fill:false},
+      {label:'RuPay',data:[0.1,0.2,0.4,0.6,0.3,0.6,1.2,2.1,3.4],borderColor:C.rupay,backgroundColor:C.rupayA,borderWidth:2,tension:0.4,pointRadius:3,fill:true},
+      {label:'Amex',data:[1.8,1.1,1.5,2.1,1.2,2.1,2.4,2.7,3.0],borderColor:C.amex,borderWidth:2,tension:0.4,pointRadius:3,fill:false}
+    ]},options:{...BASE,plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:10}}}}});
+
+  new Chart(document.getElementById('fcRupayChart'),{type:'bar',data:{
+    labels:allYears,
+    datasets:[
+      {label:'Cards (M)',data:[350,450,550,650,720,750,900,1100,1350],backgroundColor:C.rupay,borderRadius:2,yAxisID:'y'},
+      {label:'Global Share %',type:'line',data:[2,2.5,3,3.5,4,4.2,5.8,7.2,8.5],borderColor:'#F0C040',borderWidth:2,tension:0.4,pointRadius:3,yAxisID:'y1'}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8}}},
+      scales:{
+        x:{grid:{color:G},ticks:{color:T,font:{size:12,family:'Inter',weight:'500'}}},
+        y:{grid:{color:G},ticks:{color:T,font:{size:12,family:'Inter',weight:'500'}},beginAtZero:true,position:'left'},
+        y1:{ticks:{color:'#F0C040',font:{size:10}},grid:{display:false},position:'right',beginAtZero:true}
+      }}});
+}
+
+function initScorecard(){
+  const sd=[
+    {n:'Visa',c:C.visa,overall:8.9,sat:8.2,digital:8.5,value:7.8},
+    {n:'Mastercard',c:C.mc,overall:8.7,sat:8.0,digital:8.8,value:8.2},
+    {n:'Amex',c:C.amex,overall:7.8,sat:8.8,digital:7.5,value:6.5},
+    {n:'RuPay',c:C.rupay,overall:7.2,sat:7.5,digital:8.2,value:9.2}
+  ];
+  new Chart(document.getElementById('scRadar'),{type:'radar',data:{
+    labels:['Overall','Customer Sat','Digital Score','Value for Money'],
+    datasets:sd.map(d=>({label:d.n,data:[d.overall,d.sat,d.digital,d.value],borderColor:d.c,backgroundColor:d.c+'22',borderWidth:1.5,pointRadius:4,pointBackgroundColor:d.c}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:T,font:{size:12,family:'Inter',weight:'500'},boxWidth:8,padding:12}}},
+      scales:{r:{min:5,max:10,grid:{color:G},angleLines:{color:G},pointLabels:{color:T,font:{size:12,family:'Inter',weight:'500'}},ticks:{display:false}}}}});
+
+  const tbody=document.getElementById('scBody');
+  sd.forEach(d=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div class="sc-network"><span class="sc-dot" style="background:${d.c}"></span>${d.n}</div></td>
+      <td><span style="font-family:'Syne',sans-serif;font-size:1.2rem;color:${d.c}">${d.overall}</span><div class="sc-mini" style="width:${d.overall*10}%;background:${d.c}"></div></td>
+      <td><span style="font-family:'Syne',sans-serif;font-size:1.2rem;color:${d.c}">${d.sat}</span><div class="sc-mini" style="width:${d.sat*10}%;background:${d.c}"></div></td>
+      <td><span style="font-family:'Syne',sans-serif;font-size:1.2rem;color:${d.c}">${d.digital}</span><div class="sc-mini" style="width:${d.digital*10}%;background:${d.c}"></div></td>
+      <td><span style="font-family:'Syne',sans-serif;font-size:1.2rem;color:${d.c}">${d.value}</span><div class="sc-mini" style="width:${d.value*10}%;background:${d.c}"></div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Register value labels on bars
+Chart.register({
+  id:'valueLabels',
+  afterDatasetsDraw(chart){
+    const {ctx,data,scales:{x,y}}=chart;
+    if(!chart.config.options.showDataLabels)return;
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta=chart.getDatasetMeta(di);
+      if(meta.hidden)return;
+      meta.data.forEach((bar,i)=>{
+        const val=ds.data[i];
+        if(val===null||val===undefined)return;
+        ctx.save();
+        ctx.font='600 11px Inter';
+        ctx.fillStyle='rgba(245,248,255,0.9)';
+        ctx.textAlign='center';
+        ctx.textBaseline='bottom';
+        const isHoriz=chart.config.type==='bar'&&chart.config.options.indexAxis==='y';
+        if(isHoriz){
+          ctx.textBaseline='middle';
+          ctx.textAlign='left';
+          ctx.fillText(val,bar.x+6,bar.y);
+        } else {
+          ctx.fillText(val,bar.x,bar.y-4);
+        }
+        ctx.restore();
+      });
+    });
+  }
+});
+
+// Init first page
+initPage('overview');
+</script>
+</body>
+</html>
