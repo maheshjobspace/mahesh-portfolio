@@ -855,9 +855,7 @@ if(rolesEl){
 
 // PDF MODAL
 function openPdf(){
-  const m = document.getElementById('pdf-modal');
-  m.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  window.open('cards-dashboard.html', '_blank');
 }
 function closePdf(){
   document.getElementById('pdf-modal').classList.remove('open');
