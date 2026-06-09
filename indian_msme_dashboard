@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>India MSME Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #081120;
+    --bg2: #0d1929;
+    --card: #111827;
+    --card2: #162033;
+    --border: rgba(0,212,255,0.12);
+    --primary: #00D4FF;
+    --success: #00FF94;
+    --accent: #7B61FF;
+    --warning: #FFB547;
+    --danger: #FF4D6D;
+    --text: #ffffff;
+    --text2: #8B9FC4;
+    --text3: #4A5B7A;
+    --glow: rgba(0,212,255,0.15);
+    --glow2: rgba(123,97,255,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* TOP HEADER BAR */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(8,17,32,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-logo {
+    font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    color: var(--primary); text-transform: uppercase;
+  }
+  .topbar-divider { width: 1px; height: 24px; background: var(--border); }
+  .topbar-title { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  /* SIDEBAR NAV */
+  .sidebar {
+    position: fixed; left: 0; top: 56px; bottom: 0; width: 56px;
+    background: rgba(8,17,32,0.96); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; padding: 16px 0;
+    gap: 4px; z-index: 900; overflow: hidden;
+    transition: width 0.3s ease;
+  }
+  .sidebar:hover { width: 200px; }
+  .nav-item {
+    width: 100%; display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; cursor: pointer; border-radius: 0;
+    transition: all 0.2s; color: var(--text3); white-space: nowrap;
+    font-size: 12px; font-weight: 500;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--primary); background: rgba(0,212,255,0.07); }
+  .nav-item svg { flex-shrink: 0; }
+  .nav-label { opacity: 0; transition: opacity 0.2s; }
+  .sidebar:hover .nav-label { opacity: 1; }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: 56px;
+    margin-top: 56px;
+    padding: 28px 28px 60px;
+  }
+
+  /* SECTION HEADERS */
+  .section { margin-bottom: 40px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  }
+  .section-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--primary); text-transform: uppercase;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    padding: 3px 8px; border-radius: 3px;
+  }
+  .section-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .section-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-1px); }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover::before { opacity: 1; }
+
+  /* GRIDS */
+  .grid-6 { display: grid; grid-template-columns: repeat(6,1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+  /* KPI CARDS */
+  .kpi-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; font-size: 18px;
+  }
+  .kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 800; letter-spacing: -1px; font-family: 'JetBrains Mono', monospace; }
+  .kpi-delta { font-size: 11px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .delta-up { color: var(--success); }
+  .delta-down { color: var(--danger); }
+
+  .kpi-c1 { background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.2); }
+  .kpi-c1 .kpi-icon { background: rgba(0,212,255,0.15); color: var(--primary); }
+  .kpi-c1 .kpi-value { color: var(--primary); }
+  .kpi-c2 { background: rgba(0,255,148,0.05); border-color: rgba(0,255,148,0.15); }
+  .kpi-c2 .kpi-icon { background: rgba(0,255,148,0.12); color: var(--success); }
+  .kpi-c2 .kpi-value { color: var(--success); }
+  .kpi-c3 { background: rgba(123,97,255,0.07); border-color: rgba(123,97,255,0.2); }
+  .kpi-c3 .kpi-icon { background: rgba(123,97,255,0.15); color: var(--accent); }
+  .kpi-c3 .kpi-value { color: var(--accent); }
+  .kpi-c4 { background: rgba(255,181,71,0.06); border-color: rgba(255,181,71,0.2); }
+  .kpi-c4 .kpi-icon { background: rgba(255,181,71,0.15); color: var(--warning); }
+  .kpi-c4 .kpi-value { color: var(--warning); }
+
+  /* CHART CONTAINER */
+  .chart-wrap { position: relative; width: 100%; }
+  .chart-title {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .chart-sub { font-size: 11px; color: var(--text3); margin-bottom: 16px; }
+
+  /* INDIA MAP SVG SECTION */
+  .map-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex; gap: 24px;
+  }
+  .map-svg-wrap { flex: 1; min-height: 400px; position: relative; }
+  .map-legend { width: 200px; }
+  .legend-title { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .state-rank { font-size: 11px; color: var(--text3); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+
+  /* RANK LIST */
+  .rank-list { display: flex; flex-direction: column; gap: 8px; }
+  .rank-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg2); border-radius: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .rank-item:hover { border-color: var(--border); }
+  .rank-num {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: rgba(0,212,255,0.1); color: var(--primary);
+    font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-family: 'JetBrains Mono', monospace;
+  }
+  .rank-name { font-size: 12px; font-weight: 600; flex: 1; }
+  .rank-bar-wrap { width: 100px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; }
+  .rank-bar { height: 4px; border-radius: 2px; background: var(--primary); }
+  .rank-val { font-size: 11px; color: var(--text2); font-family: 'JetBrains Mono', monospace; min-width: 48px; text-align: right; }
+
+  /* CREDIT SECTION */
+  .credit-flow {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .credit-node {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; text-align: center;
+    flex: 1; min-width: 100px;
+    transition: all 0.3s;
+  }
+  .credit-node:hover { border-color: var(--primary); background: rgba(0,212,255,0.05); }
+  .credit-node-icon { font-size: 22px; margin-bottom: 6px; }
+  .credit-node-label { font-size: 11px; font-weight: 600; color: var(--text2); }
+  .credit-arrow { font-size: 18px; color: var(--primary); opacity: 0.5; flex-shrink: 0; }
+
+  .benefit-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .benefit-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--bg2); border-radius: 8px; padding: 12px;
+    border: 1px solid transparent; transition: border-color 0.2s;
+  }
+  .benefit-item:hover { border-color: var(--border); }
+  .benefit-icon { font-size: 18px; flex-shrink: 0; }
+  .benefit-text { font-size: 12px; line-height: 1.5; color: var(--text2); }
+  .benefit-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+  /* INSIGHT CARDS */
+  .insight-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+    border-left: 3px solid var(--primary);
+    transition: transform 0.2s;
+  }
+  .insight-card:hover { transform: translateX(4px); }
+  .insight-card.accent { border-left-color: var(--accent); }
+  .insight-card.success { border-left-color: var(--success); }
+  .insight-card.warning { border-left-color: var(--warning); }
+  .insight-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 6px; }
+  .insight-card.accent .insight-label { color: var(--accent); }
+  .insight-card.success .insight-label { color: var(--success); }
+  .insight-card.warning .insight-label { color: var(--warning); }
+  .insight-text { font-size: 13px; line-height: 1.6; color: var(--text2); }
+  .insight-text strong { color: var(--text); }
+
+  /* CEO PANEL */
+  .ceo-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+  .ceo-col {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .ceo-col-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ceo-col.opp .ceo-col-title { color: var(--success); }
+  .ceo-col.risk .ceo-col-title { color: var(--danger); }
+  .ceo-col.policy .ceo-col-title { color: var(--accent); }
+  .ceo-col.credit .ceo-col-title { color: var(--primary); }
+  .ceo-col.growth .ceo-col-title { color: var(--warning); }
+  .ceo-item { font-size: 12px; color: var(--text2); line-height: 1.5; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .ceo-item:last-child { border-bottom: none; }
+  .ceo-item::before { content: '→ '; color: inherit; opacity: 0.5; }
+
+  /* STAT PILLS */
+  .stat-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .stat-pill {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px;
+    font-size: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill-label { color: var(--text3); }
+  .stat-pill-value { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  /* GENDER GAUGE */
+  .gender-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .gender-bar-wrap { flex: 1; }
+  .gender-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .gender-bar-bg { height: 12px; border-radius: 6px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .gender-bar-fill { height: 100%; border-radius: 6px; transition: width 1s ease; }
+
+  /* ZED PROGRESS */
+  .zed-item { margin-bottom: 16px; }
+  .zed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .zed-label { font-size: 13px; font-weight: 600; }
+  .zed-val { font-size: 13px; font-family: 'JetBrains Mono', monospace; color: var(--text2); }
+  .zed-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.05); overflow: hidden; }
+  .zed-fill { height: 100%; border-radius: 4px; transition: width 1.2s ease; }
+
+  /* ANIMATIONS */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes countUp { from { opacity:0 } to { opacity:1 } }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes glow-pulse {
+    0%,100% { box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+    50% { box-shadow: 0 0 40px rgba(0,212,255,0.2); }
+  }
+
+  .section { animation: fadeUp 0.6s ease both; }
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+
+  /* HERO STRIP */
+  .hero-strip {
+    background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(123,97,255,0.08) 100%);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 14px; padding: 28px 32px; margin-bottom: 36px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden;
+    animation: glow-pulse 4s ease infinite;
+  }
+  .hero-strip::after {
+    content: ''; position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300D4FF' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero-title { font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+  .hero-title span { 
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub { font-size: 13px; color: var(--text2); margin-top: 6px; max-width: 500px; }
+  .hero-meta { text-align: right; }
+  .hero-meta-val { font-size: 36px; font-weight: 900; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+  .hero-meta-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* TOOLTIP */
+  .tooltip-wrapper { position: relative; display: inline-block; }
+  .tooltip-text {
+    visibility: hidden; background: var(--card2); color: var(--text);
+    font-size: 11px; border-radius: 6px; padding: 6px 10px;
+    position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%);
+    white-space: nowrap; border: 1px solid var(--border);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .tooltip-wrapper:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+  /* India MAP */
+  #indiaMapSvg { width: 100%; height: 400px; }
+  .state-path {
+    cursor: pointer; transition: opacity 0.2s;
+    stroke: rgba(0,212,255,0.15); stroke-width: 0.5;
+  }
+  .state-path:hover { opacity: 0.7; stroke: var(--primary); stroke-width: 1.5; }
+
+  /* SCORECARD */
+  .scorecard {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .scorecard-icon { font-size: 24px; }
+  .scorecard-label { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+  .scorecard-val { font-size: 20px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1200px) {
+    .grid-6 { grid-template-columns: repeat(3,1fr); }
+    .ceo-grid { grid-template-columns: repeat(3,1fr); }
+  }
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: repeat(2,1fr); }
+    .grid-3 { grid-template-columns: repeat(2,1fr); }
+    .grid-1-2, .grid-2-1 { grid-template-columns: 1fr; }
+    .benefit-grid { grid-template-columns: repeat(2,1fr); }
+    .ceo-grid { grid-template-columns: repeat(2,1fr); }
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .map-container { flex-direction: column; }
+    .map-legend { width: 100%; }
+  }
+  @media (max-width: 600px) {
+    .grid-6, .grid-4, .grid-3 { grid-template-columns: repeat(2,1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .hero-strip { flex-direction: column; gap: 16px; }
+    .hero-meta { text-align: left; }
+    .credit-flow { flex-direction: column; }
+    .ceo-grid { grid-template-columns: 1fr; }
+  }
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">MSME·IQ</div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">India MSME Intelligence Dashboard</div>
+  </div>
+  <div class="topbar-right">
+    <div style="font-size:11px;color:var(--text3);">Ministry of MSME · FY 2025-26</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-item active" onclick="scrollTo('overview')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Overview</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('statemap')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+    <span class="nav-label">State Map</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('segmentation')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 7.07 17.07"/></svg>
+    <span class="nav-label">Segments</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('zones')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span class="nav-label">Zones</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('sector')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    <span class="nav-label">Sectors</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('gender')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+    <span class="nav-label">Gender</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('credit')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <span class="nav-label">Credit</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('cgtmse')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <span class="nav-label">CGTMSE</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('pmegp')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+    <span class="nav-label">PMEGP</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('skills')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    <span class="nav-label">Skills</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('zed')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+    <span class="nav-label">ZED</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('insights')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="nav-label">Insights</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('ceo')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <span class="nav-label">CEO Summary</span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero-strip">
+    <div>
+      <div class="hero-title">India <span>MSME Intelligence</span> Dashboard</div>
+      <div class="hero-sub">Comprehensive ecosystem intelligence for policymakers, investors, lenders & fintechs — powered by Ministry of MSME data FY 2025-26</div>
+    </div>
+    <div class="hero-meta">
+      <div class="hero-meta-val" id="heroCount">85.13M</div>
+      <div class="hero-meta-label">Total MSMEs Registered</div>
+      <div class="stat-row" style="justify-content:flex-end; margin-top:10px;">
+        <div class="stat-pill"><span class="stat-pill-label">Employment</span><span class="stat-pill-value">375M+</span></div>
+        <div class="stat-pill"><span class="stat-pill-label">PMEGP Projects</span><span class="stat-pill-value">585K+</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S1: OVERVIEW KPIs -->
+  <div class="section" id="overview">
+    <div class="section-header">
+      <div class="section-badge">Section 01</div>
+      <div>
+        <div class="section-title">Executive Overview</div>
+        <div class="section-sub">Core performance indicators across India's MSME ecosystem</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-6">
+      <div class="card kpi-c1">
+        <div class="kpi-icon">🏭</div>
+        <div class="kpi-label">Total MSMEs</div>
+        <div class="kpi-value" data-target="85.13" data-suffix="M">0</div>
+        <div class="kpi-delta delta-up">↑ 12.4% YoY formalization growth</div>
+      </div>
+      <div class="card kpi-c2">
+        <div class="kpi-icon">🏆</div>
+        <div class="kpi-label">Largest State</div>
+        <div class="kpi-value" data-target="10.88" data-suffix="M">0</div>
+        <div class="kpi-delta"><span style="color:var(--text3)">Maharashtra leads</span></div>
+      </div>
+      <div class="card kpi-c3">
+        <div class="kpi-icon">🔵</div>
+        <div class="kpi-label">Small MSMEs</div>
+        <div class="kpi-value" data-target="823" data-suffix="K">0</div>
+        <div class="kpi-delta delta-up">↑ Formalisation trend</div>
+      </div>
+      <div class="card kpi-c4">
+        <div class="kpi-icon">⬛</div>
+        <div class="kpi-label">Medium MSMEs</div>
+        <div class="kpi-value" data-target="78" data-suffix="K">0</div>
+        <div class="kpi-delta"><span style="color:var(--text3)">High-value employers</span></div>
+      </div>
+      <div class="card kpi-c2">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">Employment</div>
+        <div class="kpi-value" data-target="375" data-suffix="M+">0</div>
+        <div class="kpi-delta delta-up">↑ ~46% of workforce</div>
+      </div>
+      <div class="card kpi-c1">
+        <div class="kpi-icon">🚀</div>
+        <div class="kpi-label">PMEGP Projects</div>
+        <div class="kpi-value" data-target="585" data-suffix="K+">0</div>
+        <div class="kpi-delta delta-up">↑ 3.2% vs last FY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 + S3: MAP + STATE RANKINGS -->
+  <div class="section" id="statemap">
+    <div class="section-header">
+      <div class="section-badge">Section 02–03</div>
+      <div>
+        <div class="section-title">State Intelligence — Heatmap & Rankings</div>
+        <div class="section-sub">MSME concentration by geography and state performance ranking</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-1-2">
+      <!-- State Rankings -->
+      <div class="card">
+        <div class="chart-title">Top States by Total MSMEs</div>
+        <div class="chart-sub">Ranked by registered enterprise count</div>
+        <div class="rank-list" id="rankList"></div>
+      </div>
+      <!-- Bar Chart -->
+      <div class="card">
+        <div class="chart-title">Top 10 States — MSME Distribution</div>
+        <div class="chart-sub">Micro · Small · Medium breakdown</div>
+        <div class="chart-wrap" style="height:340px">
+          <canvas id="stateChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4: ENTERPRISE SEGMENTATION -->
+  <div class="section" id="segmentation">
+    <div class="section-header">
+      <div class="section-badge">Section 04</div>
+      <div>
+        <div class="section-title">Enterprise Segmentation</div>
+        <div class="section-sub">Micro · Small · Medium distribution across the ecosystem</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="chart-title">MSME Type Distribution</div>
+        <div class="chart-sub">Share by enterprise category</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">Segment KPIs</div>
+        <div class="chart-sub">Key metrics per category</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+          <div class="scorecard">
+            <div class="scorecard-icon">🟡</div>
+            <div>
+              <div class="scorecard-label">Micro Enterprises</div>
+              <div class="scorecard-val" style="color:var(--primary)">84.23M <span style="font-size:12px;color:var(--text3)">99.0%</span></div>
+            </div>
+          </div>
+          <div class="scorecard">
+            <div class="scorecard-icon">🟢</div>
+            <div>
+              <div class="scorecard-label">Small Enterprises</div>
+              <div class="scorecard-val" style="color:var(--success)">823K <span style="font-size:12px;color:var(--text3)">0.97%</span></div>
+            </div>
+          </div>
+          <div class="scorecard">
+            <div class="scorecard-icon">🔵</div>
+            <div>
+              <div class="scorecard-label">Medium Enterprises</div>
+              <div class="scorecard-val" style="color:var(--accent)">78K <span style="font-size:12px;color:var(--text3)">0.09%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">Top Micro MSME States</div>
+        <div class="chart-sub">Informal + formal micro enterprises</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="microChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: ZONE ANALYSIS -->
+  <div class="section" id="zones">
+    <div class="section-header">
+      <div class="section-badge">Section 05</div>
+      <div>
+        <div class="section-title">Zone-wise MSME Analysis</div>
+        <div class="section-sub">North · South · East · West enterprise distribution</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">Zonal Micro Enterprise Distribution (Lakhs)</div>
+        <div class="chart-sub">Stacked by enterprise size</div>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="zoneChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">Zone Performance Radar</div>
+        <div class="chart-sub">Composite MSME score by zone</div>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="zoneRadar"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: SECTOR INTELLIGENCE -->
+  <div class="section" id="sector">
+    <div class="section-header">
+      <div class="section-badge">Section 06</div>
+      <div>
+        <div class="section-title">Sector Intelligence</div>
+        <div class="section-sub">Manufacturing · Services · Trading contribution analysis</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="background:rgba(255,181,71,0.05); border-color:rgba(255,181,71,0.2);">
+        <div class="kpi-icon" style="background:rgba(255,181,71,0.15);color:var(--warning);font-size:22px;">🛒</div>
+        <div class="kpi-label">Trading Sector</div>
+        <div class="kpi-value" style="color:var(--warning)">35.93M</div>
+        <div class="kpi-delta" style="color:var(--text2)">42.2% of total MSMEs</div>
+        <div style="margin-top:12px;height:4px;border-radius:2px;background:rgba(255,181,71,0.15);">
+          <div style="height:4px;border-radius:2px;background:var(--warning);width:42.2%"></div>
+        </div>
+      </div>
+      <div class="card" style="background:rgba(0,255,148,0.05); border-color:rgba(0,255,148,0.2);">
+        <div class="kpi-icon" style="background:rgba(0,255,148,0.12);color:var(--success);font-size:22px;">⚙️</div>
+        <div class="kpi-label">Services Sector</div>
+        <div class="kpi-value" style="color:var(--success)">31.54M</div>
+        <div class="kpi-delta" style="color:var(--text2)">37.1% of total MSMEs</div>
+        <div style="margin-top:12px;height:4px;border-radius:2px;background:rgba(0,255,148,0.1);">
+          <div style="height:4px;border-radius:2px;background:var(--success);width:37.1%"></div>
+        </div>
+      </div>
+      <div class="card" style="background:rgba(0,212,255,0.05); border-color:rgba(0,212,255,0.2);">
+        <div class="kpi-icon" style="background:rgba(0,212,255,0.12);color:var(--primary);font-size:22px;">🏗️</div>
+        <div class="kpi-label">Manufacturing Sector</div>
+        <div class="kpi-value" style="color:var(--primary)">17.40M</div>
+        <div class="kpi-delta" style="color:var(--text2)">20.5% of total MSMEs</div>
+        <div style="margin-top:12px;height:4px;border-radius:2px;background:rgba(0,212,255,0.1);">
+          <div style="height:4px;border-radius:2px;background:var(--primary);width:20.5%"></div>
+        </div>
+      </div>
+      <div class="card span-3">
+        <div class="chart-title">Sector Distribution Breakdown</div>
+        <div class="chart-sub">Proportional share of India's MSME economy</div>
+        <div style="display:flex;align-items:center;gap:24px;">
+          <div class="chart-wrap" style="height:200px;width:200px;flex-shrink:0;">
+            <canvas id="sectorPie"></canvas>
+          </div>
+          <div style="flex:1;">
+            <div style="margin-bottom:16px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Trading</span><span style="color:var(--warning);font-family:'JetBrains Mono',monospace;">35.93M (42.2%)</span></div>
+              <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.05);"><div style="height:8px;border-radius:4px;background:var(--warning);width:42.2%"></div></div>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Services</span><span style="color:var(--success);font-family:'JetBrains Mono',monospace;">31.54M (37.1%)</span></div>
+              <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.05);"><div style="height:8px;border-radius:4px;background:var(--success);width:37.1%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Manufacturing</span><span style="color:var(--primary);font-family:'JetBrains Mono',monospace;">17.40M (20.5%)</span></div>
+              <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.05);"><div style="height:8px;border-radius:4px;background:var(--primary);width:20.5%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7: GENDER DIVERSITY -->
+  <div class="section" id="gender">
+    <div class="section-header">
+      <div class="section-badge">Section 07</div>
+      <div>
+        <div class="section-title">Gender Diversity Dashboard</div>
+        <div class="section-sub">Male vs Female MSME ownership — inclusion index</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">Gender Ownership Distribution</div>
+        <div class="chart-sub">Registered MSME ownership by gender</div>
+        <div style="margin-top:20px;">
+          <div class="gender-bar-wrap" style="margin-bottom:20px;">
+            <div class="gender-label"><span>👨 Male Registered</span><span style="color:var(--primary);font-family:'JetBrains Mono',monospace;">51.66M</span></div>
+            <div class="gender-bar-bg"><div class="gender-bar-fill" style="width:61.1%;background:linear-gradient(90deg,var(--primary),var(--accent))"></div></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">61.1% of total registrations</div>
+          </div>
+          <div class="gender-bar-wrap">
+            <div class="gender-label"><span>👩 Female Registered</span><span style="color:#FF6EB4;font-family:'JetBrains Mono',monospace;">32.88M</span></div>
+            <div class="gender-bar-bg"><div class="gender-bar-fill" style="width:38.7%;background:linear-gradient(90deg,#FF6EB4,#FF9ECA)"></div></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">38.7% of total registrations</div>
+          </div>
+        </div>
+        <div style="margin-top:24px;padding:14px;background:rgba(0,212,255,0.05);border-radius:8px;border:1px solid rgba(0,212,255,0.1);">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">GENDER GAP INDEX</div>
+          <div style="font-size:22px;font-weight:800;color:var(--warning)">22.4%</div>
+          <div style="font-size:11px;color:var(--text2)">Female inclusion needs policy acceleration</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">Gender Distribution Chart</div>
+        <div class="chart-sub">Visual split analysis</div>
+        <div class="chart-wrap" style="height:260px;">
+          <canvas id="genderChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8: CREDIT REGISTRY -->
+  <div class="section" id="credit">
+    <div class="section-header">
+      <div class="section-badge">Section 08</div>
+      <div>
+        <div class="section-title">MSME Credit Registry & Financial Inclusion</div>
+        <div class="section-sub">Credit intelligence framework for responsible lending</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px; background:linear-gradient(135deg,rgba(123,97,255,0.06),rgba(0,212,255,0.04));">
+      <div style="font-size:13px;line-height:1.8;color:var(--text2);max-width:800px;">
+        A centralized credit intelligence framework enabling lenders to assess borrower risk, monitor repayment behaviour, reduce over-indebtedness, and promote responsible lending across India's 85M+ MSME ecosystem.
+      </div>
+      <div class="stat-row">
+        <div class="stat-pill"><span class="stat-pill-label">Credit Gap</span><span class="stat-pill-value" style="color:var(--danger)">$530B</span></div>
+        <div class="stat-pill"><span class="stat-pill-label">Formal Credit Access</span><span class="stat-pill-value" style="color:var(--warning)">~14%</span></div>
+        <div class="stat-pill"><span class="stat-pill-label">Priority Sector</span><span class="stat-pill-value" style="color:var(--success)">40% Target</span></div>
+      </div>
+    </div>
+    <!-- Credit Flow -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="chart-title">Lender Ecosystem Flow</div>
+      <div class="chart-sub">Credit delivery chain from bureau to borrower</div>
+      <div class="credit-flow" style="margin-top:16px;">
+        <div class="credit-node">
+          <div class="credit-node-icon">🏦</div>
+          <div class="credit-node-label">Banks</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">PSU + Pvt</div>
+        </div>
+        <div class="credit-arrow">→</div>
+        <div class="credit-node">
+          <div class="credit-node-icon">🏢</div>
+          <div class="credit-node-label">NBFCs</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Non-Bank FIs</div>
+        </div>
+        <div class="credit-arrow">→</div>
+        <div class="credit-node">
+          <div class="credit-node-icon">🤝</div>
+          <div class="credit-node-label">MFIs</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Microfinance</div>
+        </div>
+        <div class="credit-arrow">→</div>
+        <div class="credit-node">
+          <div class="credit-node-icon">💻</div>
+          <div class="credit-node-label">Fintechs</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Digital Lenders</div>
+        </div>
+        <div class="credit-arrow">→</div>
+        <div class="credit-node">
+          <div class="credit-node-icon">📊</div>
+          <div class="credit-node-label">Credit Bureaus</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">CIBIL · CRIF</div>
+        </div>
+        <div class="credit-arrow">→</div>
+        <div class="credit-node" style="border-color:rgba(0,255,148,0.3);background:rgba(0,255,148,0.05);">
+          <div class="credit-node-icon">🏭</div>
+          <div class="credit-node-label" style="color:var(--success)">MSME Borrower</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">End Recipient</div>
+        </div>
+      </div>
+    </div>
+    <!-- Benefits -->
+    <div class="benefit-grid">
+      <div class="benefit-item">
+        <div class="benefit-icon">🎯</div>
+        <div class="benefit-text"><strong>Better Credit Assessment</strong>Comprehensive data enables accurate risk profiling beyond collateral</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">🛡️</div>
+        <div class="benefit-text"><strong>Reduced Default Risk</strong>Early warning signals through behavioral analytics and bureau data</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">⚖️</div>
+        <div class="benefit-text"><strong>Prevention of Multiple Lending</strong>Deduplication across lenders prevents over-indebtedness</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">⚡</div>
+        <div class="benefit-text"><strong>Faster Loan Approvals</strong>Pre-validated data reduces turnaround from weeks to hours</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">📈</div>
+        <div class="benefit-text"><strong>Improved Portfolio Quality</strong>NPA reduction through continuous monitoring and alerts</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">🌐</div>
+        <div class="benefit-text"><strong>Enhanced Financial Inclusion</strong>Formalized credit history enables first-time borrower access</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9: CGTMSE -->
+  <div class="section" id="cgtmse">
+    <div class="section-header">
+      <div class="section-badge">Section 09</div>
+      <div>
+        <div class="section-title">Credit Guarantee Intelligence — CGTMSE</div>
+        <div class="section-sub">State-wise guarantee coverage and disbursement analysis</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">CGTMSE Guarantees by State</div>
+        <div class="chart-sub">Number of guarantees issued (thousands)</div>
+        <div class="chart-wrap" style="height:300px;">
+          <canvas id="cgtmseChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">CGTMSE Amount Approved</div>
+        <div class="chart-sub">Amount approved in ₹ Crores by state</div>
+        <div class="chart-wrap" style="height:300px;">
+          <canvas id="cgtmseAmt"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10: PMEGP -->
+  <div class="section" id="pmegp">
+    <div class="section-header">
+      <div class="section-badge">Section 10</div>
+      <div>
+        <div class="section-title">PMEGP Analytics</div>
+        <div class="section-sub">Prime Minister's Employment Generation Programme — impact tracking</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-4" style="margin-bottom:16px;">
+      <div class="card kpi-c1">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-label">Total Projects</div>
+        <div class="kpi-value" style="font-size:22px;">584.95K</div>
+      </div>
+      <div class="card kpi-c2">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Total Loans (₹ Cr)</div>
+        <div class="kpi-value" style="font-size:22px;">60.44K</div>
+      </div>
+      <div class="card kpi-c3">
+        <div class="kpi-icon">🏅</div>
+        <div class="kpi-label">Max Loans (State)</div>
+        <div class="kpi-value" style="font-size:22px;">128.16K</div>
+        <div class="kpi-delta" style="color:var(--text3)">Karnataka</div>
+      </div>
+      <div class="card kpi-c4">
+        <div class="kpi-icon">✂️</div>
+        <div class="kpi-label">Top Trade</div>
+        <div class="kpi-value" style="font-size:18px;">31,451</div>
+        <div class="kpi-delta" style="color:var(--text3)">Tailor category</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">PMEGP Employment Generated (Year-wise)</div>
+        <div class="chart-sub">Estimated employment in thousands</div>
+        <div class="chart-wrap" style="height:260px;">
+          <canvas id="pmegpTrend"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">States with >10K Loans Granted</div>
+        <div class="chart-sub">PMEGP loan distribution — high-performing states</div>
+        <div class="chart-wrap" style="height:260px;">
+          <canvas id="pmegpStates"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11+S12: SKILLS & TRAINING -->
+  <div class="section" id="skills">
+    <div class="section-header">
+      <div class="section-badge">Section 11–12</div>
+      <div>
+        <div class="section-title">Skill Development & Training Intelligence</div>
+        <div class="section-sub">Tool Rooms · KVIC · NSIC · Coir Board · NI-MSME — 5-year trend</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div class="card">
+        <div class="chart-title">Skill Training Divisions — 5-Year Trend</div>
+        <div class="chart-sub">Trainees across all MSME divisions (thousands)</div>
+        <div class="chart-wrap" style="height:280px;">
+          <canvas id="skillChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">MSME Training KPI Trend</div>
+        <div class="chart-sub">Units · Trainees · Revenue over 5 years</div>
+        <div class="chart-wrap" style="height:280px;">
+          <canvas id="trainingChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="grid-4">
+      <div class="card">
+        <div class="kpi-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);">🔧</div>
+        <div class="kpi-label">Tool Rooms</div>
+        <div class="kpi-value" style="color:var(--primary);font-size:20px;">428K</div>
+        <div class="kpi-delta delta-up">↑ FY 2025-26</div>
+      </div>
+      <div class="card">
+        <div class="kpi-icon" style="background:rgba(0,255,148,0.1);color:var(--success);">🌿</div>
+        <div class="kpi-label">KVIC</div>
+        <div class="kpi-value" style="color:var(--success);font-size:20px;">38K</div>
+        <div class="kpi-delta delta-down">↓ Optimizing</div>
+      </div>
+      <div class="card">
+        <div class="kpi-icon" style="background:rgba(123,97,255,0.1);color:var(--accent);">🏭</div>
+        <div class="kpi-label">NSIC</div>
+        <div class="kpi-value" style="color:var(--accent);font-size:20px;">97K</div>
+        <div class="kpi-delta delta-up">↑ Strong growth</div>
+      </div>
+      <div class="card">
+        <div class="kpi-icon" style="background:rgba(255,181,71,0.1);color:var(--warning);">🌾</div>
+        <div class="kpi-label">NI-MSME</div>
+        <div class="kpi-value" style="color:var(--warning);font-size:20px;">30K</div>
+        <div class="kpi-delta delta-up">↑ 2x growth</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S13: ZED -->
+  <div class="section" id="zed">
+    <div class="section-header">
+      <div class="section-badge">Section 13</div>
+      <div>
+        <div class="section-title">ZED Certification Dashboard</div>
+        <div class="section-sub">Zero Effect Zero Defect — quality maturity across MSMEs</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">ZED Certifications by Year & Grade</div>
+        <div class="chart-sub">Gold · Silver · Bronze progression</div>
+        <div class="chart-wrap" style="height:280px;">
+          <canvas id="zedChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">FY 2025-26 Certification Snapshot</div>
+        <div class="chart-sub">Current year maturity distribution</div>
+        <div style="margin-top:16px;">
+          <div class="zed-item">
+            <div class="zed-header">
+              <span class="zed-label">🥇 Gold Certifications</span>
+              <span class="zed-val">4,450</span>
+            </div>
+            <div class="zed-track"><div class="zed-fill" style="width:44%;background:linear-gradient(90deg,#FFD700,#FFA500)"></div></div>
+          </div>
+          <div class="zed-item">
+            <div class="zed-header">
+              <span class="zed-label">🥈 Silver Certifications</span>
+              <span class="zed-val">5,480</span>
+            </div>
+            <div class="zed-track"><div class="zed-fill" style="width:54%;background:linear-gradient(90deg,#C0C0C0,#A8A8A8)"></div></div>
+          </div>
+          <div class="zed-item">
+            <div class="zed-header">
+              <span class="zed-label">🥉 Bronze Certifications</span>
+              <span class="zed-val">625,610</span>
+            </div>
+            <div class="zed-track"><div class="zed-fill" style="width:100%;background:linear-gradient(90deg,#CD7F32,#A0522D)"></div></div>
+          </div>
+          <div style="margin-top:20px;padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">MATURITY INSIGHT</div>
+            <div style="font-size:13px;color:var(--text2);">Bronze dominates adoption (~98.5%). Gold certifications grew <strong style="color:#FFD700;">59× in 4 years</strong> — signal of quality maturation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S14: INSIGHTS -->
+  <div class="section" id="insights">
+    <div class="section-header">
+      <div class="section-badge">Section 14</div>
+      <div>
+        <div class="section-title">Executive Insights Panel</div>
+        <div class="section-sub">AI-curated intelligence signals from the MSME data landscape</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div class="grid-3">
+      <div class="insight-card">
+        <div class="insight-label">📍 Regional Dominance</div>
+        <div class="insight-text"><strong>Maharashtra remains India's MSME powerhouse</strong> with 10.88M enterprises — leading in Micro, Small, and Medium categories simultaneously.</div>
+      </div>
+      <div class="insight-card success">
+        <div class="insight-label">📊 Ecosystem Structure</div>
+        <div class="insight-text"><strong>Micro enterprises dominate at 99%</strong> of the ecosystem. Policy interventions for graduation to Small/Medium tier are critical for productivity gains.</div>
+      </div>
+      <div class="insight-card accent">
+        <div class="insight-label">🌐 Formalization Signal</div>
+        <div class="insight-text"><strong>Southern states show strong formalization momentum</strong> — Karnataka, Tamil Nadu, and Telangana lead in Small/Medium tier conversion rates.</div>
+      </div>
+      <div class="insight-card warning">
+        <div class="insight-label">🚀 Employment Engine</div>
+        <div class="insight-text"><strong>PMEGP continues driving rural employment generation</strong> with 767K jobs created in FY 2025-26. Karnataka leads state-level delivery at 128K loans.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">🛡️ Credit Guarantee</div>
+        <div class="insight-text"><strong>CGTMSE adoption concentrated in growth corridors</strong> — UP, Maharashtra, and Tamil Nadu account for over 40% of guarantees by count.</div>
+      </div>
+      <div class="insight-card success">
+        <div class="insight-label">♀️ Gender Gap Alert</div>
+        <div class="insight-text"><strong>Female MSME ownership at 38.7%</strong> represents a 22.4% inclusion gap. Targeted credit and skilling programs needed for accelerated parity.</div>
+      </div>
+      <div class="insight-card accent">
+        <div class="insight-label">⚙️ Sector Shift</div>
+        <div class="insight-text"><strong>Trading leads (42.2%) but Services sector growing</strong> — digital MSMEs in services show higher formalization rates and lower NPA risk profiles.</div>
+      </div>
+      <div class="insight-card warning">
+        <div class="insight-label">🥇 Quality Upgrade</div>
+        <div class="insight-text"><strong>ZED Gold certifications surged 59× over 4 years</strong> — reflects mature MSMEs upgrading to export-ready quality standards amid Atmanirbhar Bharat push.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">🔧 Skill Expansion</div>
+        <div class="insight-text"><strong>Tool Room training hit 428K in FY26</strong> — a 3× jump from FY22 baseline, signaling strong alignment between skill supply and manufacturing MSME demand.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S15: CEO PANEL -->
+  <div class="section" id="ceo">
+    <div class="section-header">
+      <div class="section-badge">Section 15</div>
+      <div>
+        <div class="section-title">CEO Summary Panel</div>
+        <div class="section-sub">Boardroom intelligence — strategy, risk, and recommendations</div>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(123,97,255,0.06),rgba(0,212,255,0.04));border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">BOARDROOM BRIEFING — FY 2025-26</div>
+      <div style="font-size:15px;line-height:1.7;color:var(--text2);">India's MSME sector accounts for <strong style="color:var(--primary)">30% of GDP</strong>, <strong style="color:var(--success)">45% of exports</strong>, and employs over <strong style="color:var(--accent)">375 million</strong> people. At 85.13M registered enterprises, it is the world's largest MSME ecosystem by count, yet faces a structural <strong style="color:var(--warning)">$530B credit gap</strong>.</div>
+    </div>
+    <div class="ceo-grid">
+      <div class="ceo-col opp">
+        <div class="ceo-col-title">✅ Key Opportunities</div>
+        <div class="ceo-item">Digital lending at scale via UPI/AA stack</div>
+        <div class="ceo-item">MSME graduation programs (Micro→Small)</div>
+        <div class="ceo-item">Supply chain finance for Tier 2/3 clusters</div>
+        <div class="ceo-item">Female entrepreneur credit products</div>
+        <div class="ceo-item">Export-linked ZED premium MSMEs</div>
+      </div>
+      <div class="ceo-col risk">
+        <div class="ceo-col-title">⚠️ Key Risks</div>
+        <div class="ceo-item">85M+ informal players, low data coverage</div>
+        <div class="ceo-item">Over-concentration in Trading sector</div>
+        <div class="ceo-item">Regional credit disparity (NE/East lag)</div>
+        <div class="ceo-item">Climate risk for agri-linked MSMEs</div>
+        <div class="ceo-item">High NPA risk in sub-₹10L ticket loans</div>
+      </div>
+      <div class="ceo-col policy">
+        <div class="ceo-col-title">📜 Policy Implications</div>
+        <div class="ceo-item">Strengthen CGTMSE coverage to 75%</div>
+        <div class="ceo-item">Mandatory MSME credit registry adoption</div>
+        <div class="ceo-item">PMEGP expansion to NE states</div>
+        <div class="ceo-item">ZED certification incentives at GST level</div>
+        <div class="ceo-item">Gender-linked credit subsidy schemes</div>
+      </div>
+      <div class="ceo-col credit">
+        <div class="ceo-col-title">💳 Credit Access Insights</div>
+        <div class="ceo-item">Only ~14% MSMEs have formal credit</div>
+        <div class="ceo-item">CGTMSE guarantees growing 20% YoY</div>
+        <div class="ceo-item">Fintech lending share up to 18% in FY26</div>
+        <div class="ceo-item">AA-driven consent data enables 3× faster KYC</div>
+        <div class="ceo-item">Invoice discounting gaps in Tier 2 cities</div>
+      </div>
+      <div class="ceo-col growth">
+        <div class="ceo-col-title">📈 Growth Recommendations</div>
+        <div class="ceo-item">Build cluster-based fintech products</div>
+        <div class="ceo-item">Launch MSME scoring using GST + bank data</div>
+        <div class="ceo-item">Partner with Tool Rooms for skilling credit</div>
+        <div class="ceo-item">Target 50M female MSMEs by FY28</div>
+        <div class="ceo-item">Invest in MSME supply chain tech stack</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:40px;padding:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--primary);">MSME·IQ Intelligence Platform</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Data Source: Ministry of MSME, Government of India · FY 2025-26</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);text-align:right;">
+      <div>For: SIDBI · RBI · Banks · NBFCs · MFIs · Fintech CEOs · Investors</div>
+      <div style="margin-top:2px;">Confidential — Executive Distribution Only</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ============ UTILITIES ============
+function scrollTo(id) {
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+}
+
+function animateCount(el) {
+  const target = parseFloat(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  const duration = 1800;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    const val = ease * target;
+    el.textContent = val.toFixed(target < 10 ? 2 : 0) + suffix;
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = target + suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('[data-target]').forEach(animateCount);
+      observer.unobserve(e.target);
+    }
+  });
+}, {threshold: 0.3});
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+// ============ CHART DEFAULTS ============
+Chart.defaults.color = '#4A5B7A';
+Chart.defaults.borderColor = 'rgba(0,212,255,0.08)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const COLORS = {
+  primary: '#00D4FF', success: '#00FF94', accent: '#7B61FF',
+  warning: '#FFB547', danger: '#FF4D6D', pink: '#FF6EB4',
+  teal: '#00E5CC', orange: '#FF7043'
+};
+
+function makeGradient(ctx, color1, color2) {
+  const g = ctx.createLinearGradient(0, 0, 0, 300);
+  g.addColorStop(0, color1); g.addColorStop(1, color2);
+  return g;
+}
+
+// ============ STATE RANKINGS ============
+const stateData = [
+  {name:'Maharashtra', val:10.88},
+  {name:'Uttar Pradesh', val:9.6},
+  {name:'Tamil Nadu', val:6.6},
+  {name:'West Bengal', val:5.7},
+  {name:'Karnataka', val:5.4},
+  {name:'Madhya Pradesh', val:5.2},
+  {name:'Rajasthan', val:4.9},
+  {name:'Bihar', val:4.7},
+  {name:'Gujarat', val:4.7},
+  {name:'Andhra Pradesh', val:4.2},
+];
+const maxVal = stateData[0].val;
+const rankList = document.getElementById('rankList');
+stateData.forEach((s,i) => {
+  const pct = (s.val/maxVal)*100;
+  rankList.innerHTML += `
+    <div class="rank-item">
+      <div class="rank-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="rank-name">${s.name}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%"></div></div>
+      <div class="rank-val">${s.val}M</div>
+    </div>`;
+});
+
+// S3 STATE CHART
+const stateCtx = document.getElementById('stateChart').getContext('2d');
+new Chart(stateCtx, {
+  type: 'bar',
+  data: {
+    labels: ['MH','UP','TN','WB','KA','MP','RJ','BR','GJ','AP'],
+    datasets: [
+      { label: 'Micro (M)', data: [7.52,5.2,4.3,2.2,2.7,2.5,3.3,2.1,3.1,2.2], backgroundColor: 'rgba(0,212,255,0.7)', borderRadius: 3 },
+      { label: 'Small (L)', data: [0.82,0.45,0.43,0.27,0.34,0.22,0.3,0.14,0.61,0.18], backgroundColor: 'rgba(0,255,148,0.7)', borderRadius: 3 },
+      { label: 'Medium (K)', data: [0.078,0.030,0.032,0.020,0.026,0.014,0.019,0.009,0.049,0.011], backgroundColor: 'rgba(123,97,255,0.7)', borderRadius: 3 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: {size:11} } } },
+    scales: {
+      x: { stacked: true, grid: {display:false} },
+      y: { stacked: true, grid: {color:'rgba(0,212,255,0.05)'} }
+    }
+  }
+});
+
+// S4 DONUT
+const donutCtx = document.getElementById('donutChart').getContext('2d');
+new Chart(donutCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Micro (99.0%)', 'Small (0.97%)', 'Medium (0.09%)'],
+    datasets: [{ data: [84.23, 0.823, 0.078], backgroundColor: [COLORS.primary, COLORS.success, COLORS.accent], borderWidth: 2, borderColor: '#111827', hoverBorderColor: '#fff' }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '68%',
+    plugins: { legend: { position: 'bottom', labels: {font:{size:11},boxWidth:10,padding:12} } }
+  }
+});
+
+// S4 MICRO CHART
+const microCtx = document.getElementById('microChart').getContext('2d');
+new Chart(microCtx, {
+  type: 'bar',
+  data: {
+    labels: ['UP','WB','MH','MP','KA','BR','TN','TS','AP','RJ'],
+    datasets: [{ label: 'Informal Micro (M)', data: [4.3,3.5,3.3,2.7,2.7,2.6,2.3,2.2,2.1,1.6], backgroundColor: (ctx) => {
+      const g = ctx.chart.ctx.createLinearGradient(0,0,0,200);
+      g.addColorStop(0,'rgba(0,212,255,0.9)'); g.addColorStop(1,'rgba(0,212,255,0.3)');
+      return g;
+    }, borderRadius: 4 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: {display:false} },
+    scales: { x:{grid:{display:false}}, y:{grid:{color:'rgba(0,212,255,0.05)'}} }
+  }
+});
+
+// S5 ZONE STACKED BAR
+const zoneCtx = document.getElementById('zoneChart').getContext('2d');
+new Chart(zoneCtx, {
+  type: 'bar',
+  data: {
+    labels: ['North', 'West', 'South', 'East'],
+    datasets: [
+      { label: 'Micro (Lakhs)', data: [14.16,13.23,12.37,9.05], backgroundColor: 'rgba(0,212,255,0.75)', borderRadius: 4 },
+      { label: 'Small (Lakhs)', data: [1.62,1.67,1.31,0.77], backgroundColor: 'rgba(0,255,148,0.75)', borderRadius: 4 },
+      { label: 'Medium (K)', data: [1.23,1.43,0.98,0.52], backgroundColor: 'rgba(123,97,255,0.75)', borderRadius: 4 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position:'top', labels:{font:{size:11},boxWidth:10} } },
+    scales: {
+      x: { stacked: false, grid:{display:false} },
+      y: { grid:{color:'rgba(0,212,255,0.05)'} }
+    }
+  }
+});
+
+// S5 ZONE RADAR
+const zoneRadarCtx = document.getElementById('zoneRadar').getContext('2d');
+new Chart(zoneRadarCtx, {
+  type: 'radar',
+  data: {
+    labels: ['Micro Density','Small %','Medium %','Credit Access','PMEGP Coverage','ZED Adoption'],
+    datasets: [
+      { label: 'North', data: [82,75,68,70,85,60], borderColor: COLORS.primary, backgroundColor: 'rgba(0,212,255,0.1)', pointBackgroundColor: COLORS.primary },
+      { label: 'South', data: [78,80,72,75,70,80], borderColor: COLORS.success, backgroundColor: 'rgba(0,255,148,0.08)', pointBackgroundColor: COLORS.success },
+      { label: 'West', data: [76,82,78,80,65,72], borderColor: COLORS.warning, backgroundColor: 'rgba(255,181,71,0.07)', pointBackgroundColor: COLORS.warning },
+      { label: 'East', data: [65,60,50,55,75,40], borderColor: COLORS.accent, backgroundColor: 'rgba(123,97,255,0.07)', pointBackgroundColor: COLORS.accent },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { r: { grid:{color:'rgba(0,212,255,0.08)'}, pointLabels:{font:{size:10},color:'#8B9FC4'}, ticks:{display:false} } },
+    plugins: { legend: { position:'bottom', labels:{font:{size:11},boxWidth:10,padding:10} } }
+  }
+});
+
+// S6 SECTOR PIE
+const sectorCtx = document.getElementById('sectorPie').getContext('2d');
+new Chart(sectorCtx, {
+  type: 'pie',
+  data: {
+    labels: ['Trading','Services','Manufacturing'],
+    datasets: [{ data: [35.93,31.54,17.40], backgroundColor: [COLORS.warning, COLORS.success, COLORS.primary], borderWidth:2, borderColor:'#111827' }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+});
+
+// S7 GENDER
+const genderCtx = document.getElementById('genderChart').getContext('2d');
+new Chart(genderCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Male (61.1%)', 'Female (38.7%)', 'Other (0.2%)'],
+    datasets: [{ data: [51.66, 32.88, 0.17], backgroundColor: ['rgba(0,212,255,0.85)', 'rgba(255,110,180,0.85)', 'rgba(123,97,255,0.7)'], borderWidth:2, borderColor:'#111827' }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{ legend:{ position:'bottom', labels:{font:{size:11},boxWidth:10,padding:12} } }
+  }
+});
+
+// S9 CGTMSE
+const cgtCtx = document.getElementById('cgtmseChart').getContext('2d');
+new Chart(cgtCtx, {
+  type: 'bar',
+  data: {
+    labels: ['UP','MH','TN','KA','WB','BR','MP','GJ','RJ','DL'],
+    datasets: [{ label: 'Guarantees (K)', data: [2015,1198,1065,997,821,778,682,678,636,285],
+      backgroundColor: (ctx) => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
+        g.addColorStop(0,COLORS.accent); g.addColorStop(1,'rgba(123,97,255,0.3)');
+        return g;
+      }, borderRadius: 4 }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,212,255,0.05)'}} }
+  }
+});
+
+const cgtAmtCtx = document.getElementById('cgtmseAmt').getContext('2d');
+new Chart(cgtAmtCtx, {
+  type: 'bar',
+  data: {
+    labels: ['UP','MH','TN','KA','WB','BR','MP','GJ','RJ','DL'],
+    datasets: [{ label: 'Amount (₹ Cr K)', data: [146,177,103,103,81,55,64,121,63,58],
+      backgroundColor: (ctx) => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
+        g.addColorStop(0,COLORS.primary); g.addColorStop(1,'rgba(0,212,255,0.2)');
+        return g;
+      }, borderRadius: 4 }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,212,255,0.05)'}} }
+  }
+});
+
+// S10 PMEGP TREND
+const pmegpCtx = document.getElementById('pmegpTrend').getContext('2d');
+new Chart(pmegpCtx, {
+  type: 'line',
+  data: {
+    labels: ['2021-22','2022-23','2023-24','2024-25','2025-26'],
+    datasets: [{ label: 'Employment Generated (K)', data: [929,598,537,802,767],
+      borderColor: COLORS.success, backgroundColor: 'rgba(0,255,148,0.08)',
+      tension: 0.4, fill: true, pointBackgroundColor: COLORS.success, pointRadius: 4 }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,212,255,0.05)'}} }
+  }
+});
+
+// S10 PMEGP STATES
+const pmegpStCtx = document.getElementById('pmegpStates').getContext('2d');
+new Chart(pmegpStCtx, {
+  type: 'horizontalBar',
+  ...((() => {
+    // Use bar with indexAxis
+    return {};
+  })()),
+  type: 'bar',
+  data: {
+    labels: ['KA','MH','RJ','AP','MP','GJ','TS','BR','OD','UP'],
+    datasets: [{ label: 'Loans Granted (K)', data: [128,62,59,58,55,50,29,24,19,16],
+      backgroundColor: ['rgba(0,212,255,0.9)','rgba(0,212,255,0.8)','rgba(0,212,255,0.7)',
+        'rgba(0,212,255,0.65)','rgba(0,212,255,0.6)','rgba(0,212,255,0.55)',
+        'rgba(0,212,255,0.5)','rgba(0,212,255,0.45)','rgba(0,212,255,0.4)','rgba(0,212,255,0.35)'],
+      borderRadius: 4 }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{ x:{grid:{color:'rgba(0,212,255,0.05)'}}, y:{grid:{display:false}} }
+  }
+});
+
+// S11 SKILL CHART
+const skillCtx = document.getElementById('skillChart').getContext('2d');
+new Chart(skillCtx, {
+  type: 'line',
+  data: {
+    labels: ['2021-22','2022-23','2023-24','2024-25','2025-26'],
+    datasets: [
+      { label: 'Tool Rooms', data: [147,185,215,317,428], borderColor:COLORS.primary, backgroundColor:'rgba(0,212,255,0.06)', tension:0.4, fill:true, pointRadius:4 },
+      { label: 'KVIC', data: [63,71,90,43,38], borderColor:COLORS.success, backgroundColor:'rgba(0,255,148,0.04)', tension:0.4, fill:false, pointRadius:4 },
+      { label: 'NSIC', data: [44,61,61,79,97], borderColor:COLORS.accent, backgroundColor:'rgba(123,97,255,0.04)', tension:0.4, fill:false, pointRadius:4 },
+      { label: 'NI-MSME', data: [2,4,1,13,30], borderColor:COLORS.warning, backgroundColor:'rgba(255,181,71,0.04)', tension:0.4, fill:false, pointRadius:4 },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:10}}},
+    scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,212,255,0.05)'}} }
+  }
+});
+
+// S12 TRAINING CHART
+const trainingCtx = document.getElementById('trainingChart').getContext('2d');
+new Chart(trainingCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2021-22','2022-23','2023-24','2024-25','2025-26'],
+    datasets: [
+      { label: 'Trainees (L)', data: [217,252,277,306,344], backgroundColor:'rgba(0,212,255,0.7)', borderRadius:4, yAxisID:'y' },
+      { label: 'Units Assisted (K)', data: [1,2,2,3,4], backgroundColor:'rgba(123,97,255,0.7)', borderRadius:4, yAxisID:'y1' },
+      { label: 'Revenue (₹ Cr)', data: [3,3,4,5,5], type:'line', borderColor:COLORS.warning, backgroundColor:'rgba(255,181,71,0.1)', tension:0.4, yAxisID:'y2', pointRadius:4 },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:10}}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{grid:{color:'rgba(0,212,255,0.05)'},position:'left'},
+      y1:{display:false,position:'right'},
+      y2:{display:false,position:'right'},
+    }
+  }
+});
+
+// S13 ZED CHART
+const zedCtx = document.getElementById('zedChart').getContext('2d');
+new Chart(zedCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2022-23','2023-24','2024-25','2025-26'],
+    datasets: [
+      { label: '🥇 Gold', data: [70,540,1280,4450], backgroundColor:'rgba(255,215,0,0.8)', borderRadius:4 },
+      { label: '🥈 Silver', data: [70,430,730,5480], backgroundColor:'rgba(192,192,192,0.8)', borderRadius:4 },
+      { label: '🥉 Bronze', data: [3010,175370,102960,625610], backgroundColor:'rgba(205,127,50,0.8)', borderRadius:4, yAxisID:'y1' },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:10}}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{grid:{color:'rgba(0,212,255,0.05)'},position:'left',title:{display:true,text:'Gold+Silver',color:'#4A5B7A',font:{size:10}}},
+      y1:{position:'right',grid:{display:false},title:{display:true,text:'Bronze',color:'#4A5B7A',font:{size:10}}}
+    }
+  }
+});
+
+// Nav active state on scroll
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+const sectionMap = ['overview','statemap','segmentation','zones','sector','gender','credit','cgtmse','pmegp','skills','zed','insights','ceo'];
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navItems.forEach((item,i) => {
+    item.classList.toggle('active', sectionMap[i] === current);
+  });
+});
+</script>
+</body>
+</html>
